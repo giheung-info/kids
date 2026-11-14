@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>수업 피드백 노트</title>
+<title>몬테소리 kids note</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
@@ -45,8 +45,35 @@
   .auth .stack{text-align:left}
   .boot{min-height:60vh;display:grid;place-items:center;color:var(--sub)}
 
-  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:12px}
+  header.top{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 16px;
+    margin:-28px -20px 22px;padding:14px 20px 12px}
+  header.top:before{content:"";position:absolute;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);z-index:-1;
+    background:rgba(251,247,241,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:0 6px 20px rgba(91,76,180,.05)}
+  html,body{overflow-x:clip}
+  .topright{display:contents}
+  header.top nav.tabs{grid-column:2;grid-row:2;justify-self:end}
+  header.top .mlogo{grid-column:2;grid-row:1}
+  .brand{display:flex;align-items:center;gap:14px;color:var(--ink);min-width:0;grid-column:1;grid-row:1/span 2;align-self:center}
+  header.top .brand h1{font-size:31px}
+  header.top .brand .logo{width:54px;height:54px;font-size:28px;border-radius:18px}
+  @media (max-width:900px){
+    header.top nav.tabs{grid-column:1/-1;grid-row:3;justify-self:stretch}
+    .brand{grid-row:1/span 2}
+  }
+  @media (max-width:640px){
+    header.top .brand h1{font-size:23px}
+    header.top .mlogo span{display:none}
+    header.top .mlogo{padding:6px}
+    header.top .brand .logo{width:42px;height:42px;font-size:22px;border-radius:14px}
+    header.top nav.tabs{justify-self:stretch}
+  }
+  .mlogo{display:flex;align-items:center;gap:6px;justify-self:end;padding:4px 11px 4px 6px;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--sub);transition:.15s}
+  .mlogo:hover{color:var(--ink);border-color:var(--accent-line);box-shadow:var(--shadow-lg)}
+  .mlogo img{display:block;width:18px;height:18px;border-radius:5px}
+  .mlogo span{font-weight:700;font-size:12.5px;letter-spacing:-0.02em}
+  @media (max-width:640px){
+    .brand h1{font-size:21px} .brand .logo{width:40px;height:40px;font-size:20px}
+  }
   .brand .logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#ffe3ee,#e0f0ff);box-shadow:var(--shadow)}
   .brand h1{font-family:"Jua",sans-serif;font-weight:400;font-size:26px;margin:0;letter-spacing:0;line-height:1.2}
   .brand p{margin:2px 0 0;color:var(--sub);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -90,6 +117,29 @@
   .btn.block{width:100%;padding:12px}
   .btn.danger{color:var(--danger)}
   .btn.danger:hover{background:var(--pink);color:var(--danger);border-color:transparent}
+  .btn.ghost.sm.danger{padding:3px 8px;font-size:11.5px;font-weight:600;opacity:.6;border-radius:8px}
+  .btn.ghost.sm.danger:hover{opacity:1}
+  .lesson{position:relative;padding:12px 14px;border-radius:16px}
+  .lesson+.lesson{margin-top:8px}
+  .lesson .lrow{display:flex;align-items:center;gap:12px;padding-right:20px}
+  .lesson .linfo{flex:1;min-width:0}
+  .lesson .ttl{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .lesson .sub{font-size:12px;opacity:.75;font-weight:600;margin-top:1px}
+  .lesson .lacts{display:flex;gap:6px;flex:none}
+  .lbtn{border:0;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.8);color:inherit;white-space:nowrap;transition:.15s}
+  .lbtn:hover{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .lbtn.ghost{background:transparent}
+  .lbtn.ghost:hover{background:rgba(255,255,255,.7);box-shadow:none}
+  .lbtn.solid{background:var(--accent);color:#fff}
+  .lbtn.solid:hover{background:#6c5ce6}
+  .lesson .lx{position:absolute;top:7px;right:7px;width:20px;height:20px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:10.5px;line-height:1;cursor:pointer;opacity:.45;transition:.15s}
+  .lesson .lx:hover{opacity:1;background:#fff;color:var(--danger)}
+  .lesson.editing{box-shadow:0 0 0 2px currentColor inset}
+  .ledit{margin-top:12px;padding:12px;background:rgba(255,255,255,.75);border-radius:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ledit label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700}
+  .ledit input,.ledit select{padding:8px 10px;font-size:13.5px;background:#fff;color:var(--ink)}
+  .ledit-btns{grid-column:1/-1;display:flex;gap:6px;align-items:center}
+  @media (max-width:520px){.lesson .lrow{flex-wrap:wrap}.lesson .lacts{width:100%;justify-content:flex-end}.ledit{grid-template-columns:1fr}}
   .btn:disabled{opacity:.5;cursor:not-allowed}
 
   .chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);padding:3px 6px 3px 11px;border-radius:999px;font-size:13px;font-weight:700}
@@ -115,7 +165,9 @@
   .actionbar .btn.ghost:hover{background:rgba(255,255,255,.1);color:#fff}
 
   .kids{display:grid;gap:12px;margin-top:16px}
-  .kid{transition:box-shadow .2s, transform .2s}
+  .kid{transition:box-shadow .2s, transform .2s;scroll-margin-top:150px}
+  #tab-set>.card:not([hidden])~.card{margin-top:12px}
+  #tab-set>.card[hidden]+.card[hidden]+.card{margin-top:0 !important}
   .kid:hover{box-shadow:var(--shadow-lg)}
   .kid.off{opacity:.5}
   .kid-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -153,6 +205,9 @@
   .result{margin-top:16px;background:linear-gradient(180deg,#fdfbff,#faf8fd);border:1px solid var(--accent-line);border-radius:18px;padding:14px}
   .result textarea{min-height:320px;background:#fff;font-size:14.5px;line-height:1.8}
   .result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+  .result textarea[readonly]{cursor:default;background:#fff}
+  .result textarea[readonly]:focus{border-color:var(--line2);box-shadow:none}
+  .result textarea.editing{background:#fffef6;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
   .result-title{font-family:"Jua",sans-serif;font-size:18px;color:var(--accent)}
   .loading{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:14px;padding:8px 2px}
   .spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent-line);border-top-color:var(--accent);animation:sp .8s linear infinite}
@@ -208,14 +263,6 @@
   .slot .t{font-weight:800;font-size:15px;color:var(--ink);padding-top:6px}
   .slot .t small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
   .slot.free .t{color:var(--muted)}
-  .lesson{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;flex-wrap:wrap}
-  .lesson+.lesson{margin-top:6px}
-  .lesson .who{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 150px}
-  .lesson .ttl{font-weight:800;font-size:15px}
-  .lesson .sub{font-size:12px;opacity:.75;font-weight:600}
-  .lesson .ops{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-  .lesson select,.lesson input[type=date]{width:auto;padding:5px 8px;font-size:12.5px;border-radius:10px;background:rgba(255,255,255,.8);border-color:rgba(0,0,0,.06)}
-  .lesson .btn.sm{background:rgba(255,255,255,.7);border-color:transparent}
   .addsel{width:auto !important;padding:6px 10px !important;font-size:12.5px !important;color:var(--muted) !important;border-style:dashed !important;background:transparent !important}
 </style>
 </head>
@@ -225,7 +272,7 @@
 <div class="auth" id="authView" hidden>
   <div class="card">
     <div class="mascot">🧸</div>
-    <h1>수업 피드백 노트</h1>
+    <h1>몬테소리 kids note</h1>
     <p>이 기기에서 처음 한 번만 PIN을 입력해 주세요</p>
     <div class="stack">
       <input type="password" id="pinInput" placeholder="PIN" inputmode="numeric" autocomplete="current-password" style="text-align:center;font-size:18px;letter-spacing:.3em">
@@ -242,11 +289,14 @@
   <header class="top">
     <div class="brand">
       <div class="logo">🧸</div>
-      <div>
-        <h1>수업 피드백 노트</h1>
-        <p>간단히 적으면, 선생님 말투 그대로 써 드려요 <span class="savestate" id="saveState">저장됨</span></p>
-      </div>
+      <h1>몬테소리 kids note</h1>
+      <span class="savestate" id="saveState" hidden></span>
     </div>
+    <div class="topright">
+    <a class="mlogo" href="https://www.kidsnote.com/service/album" target="_blank" rel="noopener" title="키즈노트 앨범 열기">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAEFklEQVR4AexXb2wTZRh/7u3t+m+yjnVljE78kxDchjjdB5yiG5k1joxBZojxi4kmxigIMhICJM4oDhSJEGf84AeNSuIfcJiokGCAiaBxOnUMx8AsUYuDtax03dpee+35HMfa6/q+11xZMj7s8tz19/ye5/39rk/vclciz+hGYEa3WfsZHP9NO/zwUfj7Prhgh6GF4NsIckxnSPL4RPyD/ZEVzeE6T/TpdYlfftNp1pYY3z70BXg9IPaCHAbpHwjsA29jLJnQrkxjSRI3bIm/+748FoJYLNnXLz73UuLY9+kGNqLZJ0Nw+Rl1yamJ2ktSqYIjJw+c2a2ArD321jvJP/qn0GJ7B0SjU8jslGYf7QE8A4DPAs0PDh5c+deH6rK58WOvnQ2qOHWUur6WDnyVStMgEk305P4JaPaJS6rKEuu5ReahVsdhNS0vGG4/Ezw8HFFTPCbPDsTe2IuAHvE4ndewNPvJcqXlwmBVw7ayzkkCZIC1p/yDIUVXHvGJG7eCJKWqGYAQUrU4g6Eleva0fhiX5KZuX3AiKrZtlwNXqT1I8qse4+a5EOiHYXuUGxqXftrwanLgPGJqcLdWCJvWUUtTyHzs1/96ZPnvp6cIpVLObrd0vgk2a4rRAYbt6y6e7zjxKVOREGHPDq58PrMhs2DM3h268nnXXiInM0XSmbDpBVNtTTrPhQzYo2vXwT3F0XGWJt/0CP9EK6tK5Q3Yu4P+Sr+XqoIkqVwsvLwFgaEwYD9HDLOkA8VO875dwPOsBhZvwJ4lEeGFxpa29/yGvVFwGuyfan7+nHPBi72jP/hEVDQUN2q/s271N3fei5YJGVpO+v4NMx7K2EGLG7JH49fvX5OSHY0lm7pHIngiKSoXyN8eB45jlzlOa9EfjD/5o1/L6OM87ces9pbWzXjRZasf8kY6/hzL5qlMXvaEjO3accXhpCoiub3vqva1ABlW5GMvbGtb9EDNR8tKWKLIP9uDVwK+HiDUCz17OVQgdt6VOJ3x2ObXruFXr0TJxyts7dVFCKjhDSdOjOS+D2n2xKEqJn52onf8y4VqKk/wZGm1sHm9muLxleqi1gobAmoMR3LfhISy0qzcx8ib7hk1LQnwnouIMeTL5ea3dwLJWPLxspK7HQVYzY6qIjqv7czQul7gy6BIedHmSkTz1j7e85/Cc4XE8wk35xYFa3arifv2YVeZxaThFFjnNNfOFRSku9PscYFzN9ga8BPUnRTC/P3kDvqDfIHVdKS+tN5lgcmtcZ7l0PJr/w4mGdYnw95UDO7voKIb3MeVuG0AClexJJBf6hCOr3D1PlqGx6Hm8qMNrlIzQxm7NaHTRMD6ENjqleDdmiVMWFMs4Axutxt49OnYM22msTBrP43DNCo1O3yjE5vG/v8BAAD//7sKiFUAAAAGSURBVAMA5Jqt5k07Bc4AAAAASUVORK5CYII=" alt="" width="18" height="18">
+      <span>몬테소리 바로가기</span>
+    </a>
     <nav class="tabs" id="tabs">
       <button data-tab="cal" class="on">📅 수업 일정</button>
       <button data-tab="week">✏️ 수업 기록</button>
@@ -255,6 +305,7 @@
       <button data-tab="mat">🧩 교구 사전</button>
       <button data-tab="set">⚙️ 설정</button>
     </nav>
+    </div>
   </header>
 
   <div class="banner" id="sqlBanner" hidden>
@@ -354,7 +405,8 @@
 
   <!-- 설정 -->
   <section class="tab" id="tab-set">
-    <div class="card pad stack">
+    <!-- 기본 정보 · 말투 가이드: 화면에서만 숨김 (값은 그대로 피드백 작성에 쓰임). 다시 보이려면 hidden 지우기 -->
+    <div class="card pad stack" hidden>
       <h2>기본 정보</h2>
       <div class="two">
         <div><label class="f">선생님 이름(호칭)</label><input type="text" id="sTeacher" placeholder="예: 다은 선생님"></div>
@@ -363,7 +415,7 @@
       <div><label class="f">추가로 지킬 규칙</label><textarea id="sRules" placeholder="예: 마지막 인사는 항상 ‘다음 수업 시간에도 알차고 행복한 활동으로 찾아뵙겠습니다!’로 끝내기"></textarea></div>
     </div>
 
-    <div class="card pad stack" style="margin-top:12px">
+    <div class="card pad stack" style="margin-top:12px" hidden>
       <div><h2>말투 가이드</h2><p class="hint">과거 피드백을 분석해 말투·구성·이모지 습관을 정리해요. 새 피드백이 쌓이면 다시 만들어 주세요.</p></div>
       <textarea id="sStyle" style="min-height:180px" placeholder="아직 없어요. 아래 버튼으로 만들거나 직접 적어도 돼요."></textarea>
       <div class="row"><button class="btn" id="mkStyle">🪄 과거 피드백으로 말투 가이드 만들기</button></div>
@@ -383,6 +435,8 @@
       <div><h2>데이터 · 기기</h2><p class="hint">PIN을 바꾸려면 Supabase Secrets의 APP_PIN을 바꾸세요. 모든 기기에서 새 PIN을 다시 입력하게 돼요.</p></div>
       <div class="row">
         <button class="btn" id="exportBtn">⬇ 백업 내보내기</button>
+        <button class="btn" id="importBtn" title="아이 프로필·일정·과거 피드백이 담긴 JSON 파일을 반영해요">📥 데이터 파일 가져오기</button>
+        <input type="file" id="importPick" accept=".json,application/json" hidden>
         <button class="btn" id="legacyBtn" hidden>예전 브라우저 데이터 가져오기</button>
         <span class="spacer"></span>
         <button class="btn ghost" id="logout" title="이 기기에 저장된 PIN을 지워요">🔒 이 기기 잠그기</button>
@@ -453,6 +507,7 @@ const DEFAULT_MATERIALS = [
 let S = null;
 const photoCache = {};   // path -> {dataUrl, b64, mediaType}
 const busy = {};
+const editRes = {};   // 피드백 결과 수정 중인 아이
 const openKids = new Set();
 
 let HAS_SCHED = null;   // DB에 일정 칸(lessons 등)이 있는지 (null = 아직 모름)
@@ -572,7 +627,7 @@ function age(birth) {
   const yy = Math.floor(months / 12), mm = months % 12;
   return yy < 1 ? `${mm}개월` : `만 ${yy}세${mm ? ' ' + mm + '개월' : ''}`;
 }
-const PALETTE = [['#ffe3ee', '#c04a78'], ['#dcf5ec', '#2f8f74'], ['#e0f0ff', '#3b78b5'], ['#fff1c7', '#9a7413'], ['#ece6ff', '#6a55d8'], ['#ffe6da', '#c4603f'], ['#dff6f8', '#2a8794'], ['#f3e6fb', '#9447b8']];
+const PALETTE = [['#ffe3ee', '#c04a78'], ['#dcf5ec', '#2f8f74'], ['#e0f0ff', '#3b78b5'], ['#fff1c7', '#9a7413'], ['#ece6ff', '#6a55d8'], ['#ffe6da', '#c4603f'], ['#eef6d6', '#5f7f1f'], ['#f3e6fb', '#9447b8']];
 const colorOf = i => PALETTE[(i < 0 ? 0 : i) % PALETTE.length];
 const kidById = id => S.children.find(k => k.id === id);
 const entryOf = cid => (S.week.entries[cid] ||= { id: uuid(), childId: cid, on: defaultOn(cid), materials: [], memo: '', words: '', result: '', photos: [] });
@@ -678,6 +733,14 @@ async function boot() {
 /* ═════════════════════════════════════════════════════════
    탭
    ═════════════════════════════════════════════════════════ */
+// 삭제할 때 비밀번호 확인
+const DEL_PW = '6849';
+function delOk(msg) {
+  const v = prompt(`${msg}\n\n삭제 비밀번호를 입력해 주세요`);
+  if (v === null) return false;
+  if (v.trim() !== DEL_PW) { toast('비밀번호가 맞지 않아요'); return false; }
+  return true;
+}
 $('#tabs').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   $$('#tabs button').forEach(x => x.classList.toggle('on', x === b));
@@ -757,31 +820,44 @@ function renderDay(map = dayMap()) {
     <div class="day-head">
       <div><div class="d">${dt.getMonth() + 1}월 ${dt.getDate()}일 (${'일월화수목금토'[dt.getDay()]})</div>
       <p class="hint">${list.length ? `🧒 ${list.length}명 수업` : '수업이 없는 날이에요'}</p></div>
-      ${list.length ? `<button class="btn sm primary" data-op="week">✏️ 이날 기록하기</button>` : ''}
     </div>
     ${slots.map(h => {
       const here = list.filter(x => (x.h ?? null) === h);
-      return `<div class="slot ${here.length ? '' : 'free'}">
-        <div class="t">${h == null ? '미정' : h + ':00'}<small>${h == null ? '시간 정하기' : `~ ${h + 1}:00`}</small></div>
-        <div>${here.map(x => lessonRow(x)).join('') || addSel(h)}</div>
+      if (!here.length) return '';   // 수업 없는 시간대는 표시하지 않음
+      return `<div class="slot">
+        <div class="t">${h == null ? '미정' : h + ':00'}</div>
+        <div>${here.map(x => lessonRow(x)).join('')}</div>
       </div>`;
-    }).join('')}`;
+    }).join('')}
+    ${free.length ? `<div class="slot free"><div class="t"></div><div>${addSel(null)}</div></div>` : ''}`;
 }
+let editing = '';   // 일정 변경 중인 수업 "아이id|날짜"
 function lessonRow(x) {
   const [bg, fg] = colorOf(S.children.indexOf(x.k));
-  return `<div class="lesson" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
-    <div class="who">
+  const key = `${x.k.id}|${x.d}`, open = editing === key;
+  return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
+    <div class="lrow">
       <div class="avatar sm" style="background:#fff;color:${fg}">${esc((x.k.name || '?').slice(-2))}</div>
-      <div><div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no}</span></div>
-      <div class="sub">${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div></div>
+      <div class="linfo">
+        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no}</span></div>
+        <div class="sub">${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
+      </div>
+      <div class="lacts">
+        <button class="lbtn" data-op="edit">🗓 일정 변경</button>
+        <button class="lbtn" data-op="fb">✏️ 피드백</button>
+      </div>
     </div>
-    <div class="ops">
-      <select data-op="hour" title="시간 바꾸기">${hourOptions(x.h)}</select>
-      <input type="date" data-op="date" value="${x.d}" title="날짜 옮기기">
-      <button class="btn sm" data-op="push" title="휴강 · 이 수업부터 한 주씩 뒤로 미뤄요">한 주 미루기</button>
-      <button class="btn sm" data-op="fb" title="이 수업 피드백 쓰기">✏️ 피드백</button>
-      <button class="btn sm danger" data-op="del" title="이 수업 지우기">✕</button>
-    </div>
+    <button class="lx" data-op="del" title="이 수업 지우기" aria-label="이 수업 지우기">✕</button>
+    ${open ? `<div class="ledit">
+      <label>날짜<input type="date" data-e="date" value="${x.d}"></label>
+      <label>시간<select data-e="hour">${hourOptions(x.h)}</select></label>
+      <div class="ledit-btns">
+        <button class="lbtn ghost" data-op="push" title="이 수업을 휴강하고 이후 회차를 한 주씩 뒤로 미뤄요">휴강 처리</button>
+        <span class="spacer"></span>
+        <button class="lbtn ghost" data-op="cancel">취소</button>
+        <button class="lbtn solid" data-op="apply">변경하기</button>
+      </div>
+    </div>` : ''}
   </div>`;
 }
 function calChanged(k) { sortLessons(k); mark('children', k.id); renderCal(); }
@@ -800,30 +876,35 @@ $('#dayPanel').addEventListener('change', e => {
     if (!k.startDate) k.startDate = calSel;
     calChanged(k); toast(`${k.name} 수업을 추가했어요`); return;
   }
-  const row = t.closest('.lesson'); if (!row) return;
-  const k = kidById(row.dataset.cid); const l = k.lessons.find(x => x.d === row.dataset.d); if (!l) return;
-  if (t.dataset.op === 'hour') { l.h = t.value === '' ? null : +t.value; calChanged(k); }
-  if (t.dataset.op === 'date') {
-    const nd = t.value; if (!nd || nd === l.d) return;
-    if (k.lessons.some(x => x.d === nd)) { t.value = l.d; return toast('그날은 이미 수업이 있어요'); }
-    l.d = nd; calSel = nd; calMonth = nd.slice(0, 7); calChanged(k); toast(`${kDate(nd)}로 옮겼어요`);
-  }
 });
 $('#dayPanel').addEventListener('click', async e => {
-  const b = e.target.closest('[data-op]'); if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT') return;
+  const b = e.target.closest('[data-op]'); if (!b) return;
   if (b.dataset.op === 'week') return openRecord(calSel);
   const row = b.closest('.lesson'); if (!row) return;
   const k = kidById(row.dataset.cid); const d = row.dataset.d;
   if (b.dataset.op === 'fb') return openRecord(d, k.id);
+  if (b.dataset.op === 'edit') { editing = editing === `${k.id}|${d}` ? '' : `${k.id}|${d}`; return renderDay(); }
+  if (b.dataset.op === 'cancel') { editing = ''; return renderDay(); }
+  if (b.dataset.op === 'apply') {
+    const l = k.lessons.find(x => x.d === d); if (!l) return;
+    const nd = row.querySelector('[data-e=date]').value; const hv = row.querySelector('[data-e=hour]').value;
+    if (!nd) return toast('날짜를 골라 주세요');
+    if (nd !== d && k.lessons.some(x => x.d === nd)) return toast('그날은 이미 수업이 있어요');
+    l.d = nd; l.h = hv === '' ? null : +hv; editing = '';
+    calSel = nd; calMonth = nd.slice(0, 7); calChanged(k);
+    toast(`${k.name} 수업을 ${kDate(nd)} ${hourShort(l.h) || ''}로 바꿨어요`);
+    return;
+  }
   if (b.dataset.op === 'push') {
-    if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고, 이후 회차를 한 주씩 뒤로 미룰까요?`)) return;
+    editing = '';
+    if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고, 이후 회차를 한 주씩 뒤로 미룰까요?`)) return renderDay();
     const h = k.lessons.find(x => x.d === d).h;
     k.lessons = k.lessons.filter(x => x.d !== d);
     let nd = addDays((k.lessons[k.lessons.length - 1] || { d })['d'], 7); while (k.lessons.some(x => x.d === nd)) nd = addDays(nd, 7);
     k.lessons.push({ d: nd, h: k.hour ?? h }); calChanged(k); toast(`마지막 회차가 ${kDate(nd)}로 밀렸어요`);
   }
   if (b.dataset.op === 'del') {
-    if (!confirm(`${k.name} ${kDate(d)} 수업을 지울까요?\n이후 회차 번호가 하나씩 앞당겨져요.`)) return;
+    if (!delOk(`${k.name} ${kDate(d)} 수업을 지울까요?\n이후 회차 번호가 하나씩 앞당겨져요.`)) return;
     k.lessons = k.lessons.filter(x => x.d !== d); calChanged(k);
   }
 });
@@ -915,7 +996,7 @@ function kidCard(k, i) {
             <textarea data-f="words" placeholder="예: &quot;이건 아기 막대야!&quot; / 엄마가 결혼식 가서 늦게 온대">${esc(en.words)}</textarea>
           </div>
         </div>
-        <div><label class="f">사진 <span class="hint" style="display:inline;font-weight:400">· 활동 모습을 참고해요 (최대 5장)</span></label><div class="photos" data-box="ph"></div></div>
+        <div hidden><label class="f">사진 <span class="hint" style="display:inline;font-weight:400">· 활동 모습을 참고해요 (최대 5장)</span></label><div class="photos" data-box="ph"></div></div>
         <div class="row" style="justify-content:flex-end;gap:8px">
           <button class="btn ghost sm" data-act="prompt">프롬프트 복사</button>
           <button class="btn primary" data-act="gen">✨ ${en.result ? '다시 쓰기' : '피드백 쓰기'}</button>
@@ -1014,11 +1095,13 @@ function drawResult(cid) {
       <div class="result-head">
         <span class="result-title">${esc(titleOf(kidById(cid), S.week.date))}</span>
         <div class="row" style="gap:6px">
+          <button class="btn sm ${editRes[cid] ? 'primary' : ''}" data-act="editRes">${editRes[cid] ? '✔ 수정 완료' : '✏️ 수정'}</button>
           <button class="btn sm" data-act="copyRes">복사</button>
           <button class="btn sm" data-act="saveLib" title="과거 피드백에 저장하면 다음부터 말투 학습에 쓰여요">📚 학습 자료로 저장</button>
         </div>
       </div>
-      <textarea data-f="result">${esc(en.result)}</textarea>
+      <textarea data-f="result" class="${editRes[cid] ? 'editing' : ''}" ${editRes[cid] ? '' : 'readonly'}>${esc(en.result)}</textarea>
+      ${editRes[cid] ? '<p class="hint" style="margin-top:6px">✏️ 고치는 내용은 자동으로 저장돼요</p>' : ''}
     </div>`;
   autosize(box.querySelector('textarea'));
 }
@@ -1034,6 +1117,11 @@ $('#kids').addEventListener('click', e => {
   }
   if (act === 'gen') generate(cid);
   if (act === 'prompt') promptCopy(cid);
+  if (act === 'editRes') {
+    editRes[cid] = !editRes[cid]; drawResult(cid);
+    if (editRes[cid]) { const ta = card.querySelector('[data-box=result] textarea'); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+    else { flush(); toast('수정한 피드백을 저장했어요'); }
+  }
   if (act === 'copyRes') { const k = kidById(cid); copyText((lessonInfo(k, S.week.date) ? titleOf(k, S.week.date) + '\n\n' : '') + entryOf(cid).result); }
   if (act === 'saveLib') {
     const en = entryOf(cid); const t = en.result.trim(); if (!t) return;
@@ -1260,7 +1348,7 @@ $('#kidList').addEventListener('click', async e => {
   }
   if (e.target.dataset.act !== 'del') return;
   const id = e.target.closest('[data-id]').dataset.id; const k = kidById(id);
-  if (!confirm(`${k.name || '이 아이'} 프로필을 삭제할까요?\n수업 기록도 함께 지워지고, 과거 피드백은 ‘아이 미지정’으로 남아요.`)) return;
+  if (!delOk(`${k.name || '이 아이'} 프로필을 삭제할까요?\n수업 기록도 함께 지워지고, 과거 피드백은 ‘아이 미지정’으로 남아요.`)) return;
   await flush();
   try { await api('delete', { table: 'children', id }); } catch (err) { return toast(err.message); }
   S.children = S.children.filter(x => x.id !== id);
@@ -1340,7 +1428,7 @@ $('#libList').addEventListener('change', e => {
 $('#libList').addEventListener('click', async e => {
   const c = e.target.closest('[data-id]'); const a = e.target.dataset.act; if (!c || !a) return;
   if (a === 'more') { c.classList.toggle('expanded'); e.target.textContent = c.classList.contains('expanded') ? '접기' : '펼치기'; }
-  if (a === 'del' && confirm('이 피드백을 삭제할까요?')) {
+  if (a === 'del' && delOk('이 피드백을 삭제할까요?')) {
     dirty.feedback_library.delete(c.dataset.id);
     try { await api('delete', { table: 'feedback_library', id: c.dataset.id }); } catch (err) { return toast(err.message); }
     S.library = S.library.filter(x => x.id !== c.dataset.id); renderLib();
@@ -1372,7 +1460,7 @@ $('#matList').addEventListener('input', e => {
 });
 $('#matList').addEventListener('click', async e => {
   if (e.target.dataset.act !== 'del') return;
-  const c = e.target.closest('[data-id]'); if (!confirm('이 교구를 삭제할까요?')) return;
+  const c = e.target.closest('[data-id]'); if (!delOk('이 교구를 삭제할까요?')) return;
   dirty.materials.delete(c.dataset.id);
   try { await api('delete', { table: 'materials', id: c.dataset.id }); } catch (err) { return toast(err.message); }
   S.materials = S.materials.filter(x => x.id !== c.dataset.id); renderMats();
@@ -1423,6 +1511,47 @@ $('#mkStyle').onclick = async e => {
   try { S.settings.style = await callClaude(sys, [{ type: 'text', text: user }], 3000); mark('settings'); renderSettings(); toast('말투 가이드를 만들었어요'); }
   catch (err) { toast(err.message); }
   b.disabled = false; b.textContent = '🪄 과거 피드백으로 말투 가이드 만들기';
+};
+
+/* 데이터 파일 가져오기 (아이 프로필 · 일정 · 과거 피드백 · 말투 가이드) */
+$('#importBtn').onclick = () => $('#importPick').click();
+$('#importPick').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let d; try { d = JSON.parse(await f.text()); } catch (err) { return toast('JSON 파일을 읽지 못했어요'); }
+  if (d?.kind !== 'feedback-note-seed') return toast('가져오기용 데이터 파일이 아니에요');
+  if (HAS_SCHED === false) return toast('먼저 Supabase에서 일정 기능 SQL을 실행해 주세요');
+  const norm = s => String(s || '').replace(/^\s*\d{1,2}[./]\d{1,2}\s+/, '').replace(/\s*\(\s*\d+\s*-\s*\d+\s*\)\s*$/, '').trim();
+  const findKid = c => S.children.find(k => [c.name, c.fullName].filter(Boolean).includes(norm(k.name)));
+  const have = new Set(S.library.map(l => l.text.trim()));
+  const libNew = (d.library || []).filter(l => l.text && !have.has(l.text.trim()));
+  const kidsNew = (d.children || []).filter(c => !findKid(c));
+  if (!confirm(`아이 ${d.children?.length || 0}명 프로필·일정 반영 (새로 추가 ${kidsNew.length}명)\n과거 피드백 ${libNew.length}개 추가${d.settings?.style ? '\n말투 가이드 반영' : ''}\n\n진행할까요?`)) return;
+  show('boot');
+  try {
+    await flush();
+    for (const c of d.children || []) {
+      let k = findKid(c);
+      if (!k) { k = { id: uuid(), name: '', birth: '', gender: '', traits: '', note: '', sort: Math.max(0, ...S.children.map(x => x.sort)) + 1, startDate: '', hour: null, startSem: 1, lessons: [] }; S.children.push(k); }
+      k.name = c.name;
+      if (c.traits) k.traits = c.traits;
+      if (c.note) k.note = c.note;
+      if (c.hour != null) k.hour = +c.hour;
+      if (c.lessons?.length) { k.lessons = c.lessons.map(l => ({ d: l.d, h: l.h ?? null })); sortLessons(k); k.startSem = +c.startSem || 1; k.startDate = c.startDate || k.lessons[0].d; }
+      mark('children', k.id);
+    }
+    await flush();
+    const byName = n => S.children.find(k => k.name === n)?.id || null;
+    const rows = libNew.map(l => ({ id: uuid(), childId: byName(l.child), date: l.date || '', text: l.text.trim() }));
+    for (let i = 0; i < rows.length; i += 15) await api('insert', { table: 'feedback_library', rows: rows.slice(i, i + 15).map(toLib) });
+    S.library.unshift(...rows);
+    if (d.settings?.teacher && !S.settings.teacher) S.settings.teacher = d.settings.teacher;
+    if (d.settings?.style && (!S.settings.style || confirm('말투 가이드를 새 내용으로 바꿀까요?'))) S.settings.style = d.settings.style;
+    mark('settings'); await flush();
+    toast(`가져왔어요 · 피드백 ${rows.length}개 추가`);
+  } catch (err) { toast('가져오지 못했어요: ' + (err.message || err)); }
+  show('app');
+  const tab = $('#tabs button.on')?.dataset.tab || 'cal';
+  ({ cal: renderCal, week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[tab]();
 };
 
 $('#exportBtn').onclick = async () => {
