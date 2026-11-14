@@ -263,6 +263,79 @@
   .slot .t{font-weight:800;font-size:15px;color:var(--ink);padding-top:6px}
   .slot .t small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
   .slot.free .t{color:var(--muted)}
+  nav.tabs button i{font-style:normal;margin-right:4px}
+  .cal-day .dots{display:none}
+
+  /* ───────── 모바일 ───────── */
+  @media (max-width:640px){
+    body{font-size:14.5px}
+    .wrap{padding:16px 14px 100px}
+    header.top{margin:-16px -14px 14px;padding:10px 14px;gap:8px}
+    header.top .brand h1{font-size:21px}
+    header.top .brand .logo{width:38px;height:38px;font-size:20px;border-radius:13px}
+    header.top .mlogo{grid-row:1;align-self:center}
+    .brand{grid-row:1 !important}
+    /* 탭 → 아래 고정 탭바 */
+    header.top nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;margin:0;max-width:none;border-radius:20px 20px 0 0;
+      display:flex;justify-content:space-around;gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.96);border:0;border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(91,76,180,.1);overflow:visible}
+    nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0 5px;font-size:10.5px;border-radius:12px;min-width:0}
+    nav.tabs button i{margin:0;font-size:19px;line-height:1.1}
+    nav.tabs button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    nav.tabs button.on{background:var(--accent-soft);color:var(--accent);box-shadow:none}
+    .pad{padding:16px}
+    .card{border-radius:18px}
+    h2{font-size:18px}
+    /* 달력 */
+    .calwrap{gap:12px}
+    .cal-head .ttl{font-size:20px}
+    .cal-nav .btn{width:32px;height:32px}
+    .cal-grid{gap:3px}
+    .cal-day{min-height:50px;padding:4px 2px;align-items:center;border-radius:11px}
+    .cal-day .n{align-self:center;font-size:12px}
+    .cal-day .nm,.cal-day .more{display:none}
+    .cal-day .dots{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;max-width:30px}
+    .cal-day .dots i{width:6px;height:6px;border-radius:50%}
+    .legend{gap:6px 10px;margin-top:10px}
+    .legend span{font-size:11.5px}
+    /* 시간대별 목록 */
+    .day-head .d{font-size:20px}
+    .slot{grid-template-columns:1fr;gap:6px;padding:10px 0}
+    .slot .t{padding:0;font-size:13px;color:var(--sub)}
+    .slot.free .t{display:none}
+    .lesson{padding:10px 12px}
+    .lesson .lrow{gap:10px;padding-right:16px}
+    .lesson .ttl{font-size:14.5px}
+    .lesson .sub{font-size:11.5px}
+    .lbtn{padding:6px 8px;font-size:12px}
+    .lbtn .lg{display:none}
+    .lesson .lrow{flex-wrap:nowrap !important}
+    .lesson .lacts{width:auto !important;gap:4px}
+    .lesson .ttl .tag{font-size:11px;padding:1px 7px}
+    .lesson .lx{top:5px;right:5px}
+    /* 수업 기록 */
+    .weekbar{grid-template-columns:1fr;gap:10px}
+    .weekbar .span .row{flex-wrap:wrap !important}
+    .weekbar .span .chipbox{flex-basis:100%}
+    #applyAll{width:100%}
+    .kid-head{padding:12px 14px;gap:10px}
+    .kid-name{font-size:15px}
+    .kid-status{gap:7px}
+    .kid-body{padding:2px 14px 14px}
+    .result{padding:10px}
+    .result textarea{font-size:14px;min-height:260px}
+    .result-title{font-size:16px}
+    .actionbar{bottom:78px;border-radius:18px;padding:8px 8px 8px 14px;gap:8px}
+    .actionbar .info{font-size:12px;line-height:1.35}
+    #nextWeek{display:none}
+    .actionbar .btn.primary{padding:9px 12px;font-size:13px}
+    /* 프로필 · 목록 */
+    .grid-kids{grid-template-columns:1fr}
+    .row{gap:8px}
+    .item{padding:12px}
+    .toast{top:auto;bottom:90px;transform:translateX(-50%) translateY(20px);border-radius:16px;width:max-content;max-width:calc(100vw - 28px)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+  }
   .addsel{width:auto !important;padding:6px 10px !important;font-size:12.5px !important;color:var(--muted) !important;border-style:dashed !important;background:transparent !important}
 </style>
 </head>
@@ -298,12 +371,12 @@
       <span>몬테소리 바로가기</span>
     </a>
     <nav class="tabs" id="tabs">
-      <button data-tab="cal" class="on">📅 수업 일정</button>
-      <button data-tab="week">✏️ 수업 기록</button>
-      <button data-tab="kids">🧒 아이 프로필</button>
-      <button data-tab="lib">📚 과거 피드백</button>
-      <button data-tab="mat">🧩 교구 사전</button>
-      <button data-tab="set">⚙️ 설정</button>
+      <button data-tab="cal" class="on"><i>📅</i><span>수업 일정</span></button>
+      <button data-tab="week"><i>✏️</i><span>수업 기록</span></button>
+      <button data-tab="kids"><i>🧒</i><span>아이 프로필</span></button>
+      <button data-tab="lib"><i>📚</i><span>과거 피드백</span></button>
+      <button data-tab="mat"><i>🧩</i><span>교구 사전</span></button>
+      <button data-tab="set"><i>⚙️</i><span>설정</span></button>
     </nav>
     </div>
   </header>
@@ -803,7 +876,8 @@ function renderCal() {
     const cls = ['cal-day', dt.getMonth() !== m - 1 && 'out', dt.getDay() === 0 && 'sunday', iso === td && 'today', iso === calSel && 'sel'].filter(Boolean).join(' ');
     h += `<div class="${cls}" data-d="${iso}"><span class="n">${dt.getDate()}</span>` +
       list.slice(0, 3).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); return `<span class="nm" style="background:${bg};color:${fg}">${x.h != null ? x.h + ' ' : ''}${esc(x.k.name)}</span>`; }).join('') +
-      (list.length > 3 ? `<span class="more">+${list.length - 3}명</span>` : '') + `</div>`;
+      (list.length > 3 ? `<span class="more">+${list.length - 3}명</span>` : '') +
+      (list.length ? `<span class="dots">${list.map(x => `<i style="background:${colorOf(S.children.indexOf(x.k))[1]}"></i>`).join('')}</span>` : '') + `</div>`;
   }
   $('#calGrid').innerHTML = h;
   $('#calLegend').innerHTML = S.children.filter(k => k.lessons.length).map(k => { const [bg, fg] = colorOf(S.children.indexOf(k)); return `<span><i style="background:${fg}"></i>${esc(k.name)}${k.hour != null ? ` · ${k.hour}시` : ''}</span>`; }).join('') ||
@@ -843,7 +917,7 @@ function lessonRow(x) {
         <div class="sub">${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
-        <button class="lbtn" data-op="edit">🗓 일정 변경</button>
+        <button class="lbtn" data-op="edit">🗓 <span class="lg">일정 </span>변경</button>
         <button class="lbtn" data-op="fb">✏️ 피드백</button>
       </div>
     </div>
