@@ -303,7 +303,7 @@
 /* ═════════════════════════════════════════════════════════
    ① 여기만 채우세요 (Edge Function 주소)
    ═════════════════════════════════════════════════════════ */
-const FUNCTION_URL = 'https://mphrcxvwrpllbqcpgpzh.supabase.co/functions/v1/feedback-api';
+const FUNCTION_URL = 'https://pvpkoqbpjhwtjdexhrxt.supabase.co/functions/v1/feedback-api';
 /* ═════════════════════════════════════════════════════════ */
 
 const LEGACY_KEY = 'montessori-feedback-v1';
@@ -313,9 +313,10 @@ let PIN = (() => { try { return localStorage.getItem(PIN_KEY) || ''; } catch (e)
 
 async function api(op, payload = {}) {
   let r;
+  if (/[^\x20-\x7e]/.test(PIN)) throw new Error('PIN에 한글·특수문자가 섞였어요. 한/영 키를 영문으로 바꾸고 다시 입력해 주세요');
   try {
     r = await fetch(FUNCTION_URL, { method: 'POST', headers: { 'content-type': 'application/json', 'x-app-pin': PIN }, body: JSON.stringify({ op, ...payload }) });
-  } catch (e) { throw new Error('서버에 연결하지 못했어요. 인터넷 연결이나 FUNCTION_URL을 확인해 주세요'); }
+  } catch (e) { console.error('[api]', op, e); throw new Error(`서버에 연결하지 못했어요 (${e && e.message || e})`); }
   let data; try { data = await r.json(); } catch (e) { throw new Error(`서버 응답을 읽지 못했어요 (${r.status})`); }
   if (data?.error?.code === 'pin') { lock(); throw new Error(data.error.message); }
   if (r.status === 401) throw new Error('Edge Function의 “Verify JWT”를 꺼 주세요');
