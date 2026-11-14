@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수업 피드백 노트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#26251f; --sub:#6f6b61; --muted:#a19c90;
+    --line:#ebe7de; --line2:#ddd8cc;
+    --accent:#4f7a62; --accent-ink:#ffffff; --accent-soft:#e9f0eb; --accent-line:#cfe0d4;
+    --warm:#f3e9dc; --warm-ink:#8a5a2b; --danger:#b4533c;
+    --r:16px; --r-sm:10px;
+    --shadow:0 1px 2px rgba(38,37,31,.04), 0 4px 16px rgba(38,37,31,.04);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; letter-spacing:-0.01em;
+  }
+  button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 120px}
+  [hidden]{display:none !important}
+
+  /* auth */
+  .auth{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .auth .card{width:100%;max-width:380px;padding:32px 28px;text-align:center}
+  .auth h1{font-size:22px;margin:0 0 6px;letter-spacing:-0.03em}
+  .auth p{color:var(--sub);margin:0 0 22px;font-size:14px}
+  .auth .stack{text-align:left}
+  .boot{min-height:60vh;display:grid;place-items:center;color:var(--sub)}
+
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .brand h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-0.03em}
+  .brand p{margin:2px 0 0;color:var(--sub);font-size:13.5px;display:flex;gap:10px;align-items:center}
+  .savestate{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+  .savestate:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .savestate.saving:before{background:#d7b46a}
+  .savestate.error{color:var(--danger)} .savestate.error:before{background:var(--danger)}
+  nav.tabs{display:flex;gap:4px;background:#ece9e1;padding:4px;border-radius:999px;overflow-x:auto;max-width:100%}
+  nav.tabs button{border:0;background:transparent;padding:8px 15px;border-radius:999px;cursor:pointer;color:var(--sub);font-weight:600;font-size:14px;white-space:nowrap}
+  nav.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+  section.tab{display:none}
+  section.tab.on{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:20px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .grow{flex:1 1 200px}
+  .stack>*+*{margin-top:12px}
+  h2{font-size:17px;margin:0 0 4px;letter-spacing:-0.02em}
+  .hint{color:var(--muted);font-size:13px;margin:0}
+  label.f{display:block;font-size:12.5px;color:var(--sub);font-weight:600;margin-bottom:6px}
+
+  input[type=text],input[type=email],input[type=date],input[type=month],input[type=number],textarea,select{
+    width:100%;border:1px solid var(--line2);background:#fdfcf9;border-radius:var(--r-sm);
+    padding:10px 12px;outline:none;transition:border-color .15s, box-shadow .15s, background .15s;
+  }
+  textarea{resize:vertical;min-height:72px;line-height:1.55}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+
+  .btn{border:1px solid var(--line2);background:var(--card);padding:9px 14px;border-radius:var(--r-sm);cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;transition:background .15s,border-color .15s,transform .05s}
+  .btn:hover{background:#f7f5f0}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{background:#456c56}
+  .btn.ghost{border-color:transparent;background:transparent;color:var(--sub)}
+  .btn.ghost:hover{background:#f1eee7}
+  .btn.sm{padding:6px 10px;font-size:13px}
+  .btn.block{width:100%}
+  .btn.danger{color:var(--danger)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);padding:3px 6px 3px 10px;border-radius:999px;font-size:13px;font-weight:600}
+  .chip button{border:0;background:transparent;cursor:pointer;color:inherit;opacity:.6;padding:0 4px;font-size:14px;line-height:1}
+  .chip button:hover{opacity:1}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#f1eee7;color:var(--sub);font-weight:600}
+
+  .weekbar{display:grid;grid-template-columns:1.2fr 1fr 2fr;gap:14px;align-items:end}
+  @media (max-width:720px){.weekbar{grid-template-columns:1fr 1fr}.weekbar .span{grid-column:1/-1}}
+  .datewrap{display:flex;gap:6px}
+  .datewrap select{width:auto;max-width:44px;padding:10px 6px;color:transparent;background:#fdfcf9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6b61' stroke-width='2'%3E%3Cpath d='M3 12a9 9 0 1 0 3-6.7L3 8'/%3E%3Cpath d='M3 3v5h5'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center/16px no-repeat;cursor:pointer;-webkit-appearance:none;appearance:none}
+  .datewrap select option{color:var(--ink)}
+  .chipbox{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line2);background:#fdfcf9;border-radius:var(--r-sm);padding:6px 8px;min-height:44px}
+  .chipbox input{border:0 !important;background:transparent !important;box-shadow:none !important;padding:4px !important;flex:1;min-width:120px}
+  .chipbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:#fff}
+
+  .actionbar{position:sticky;bottom:16px;z-index:5;margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px 12px 18px;background:rgba(38,37,31,.92);color:#fff;border-radius:999px;backdrop-filter:blur(8px);box-shadow:0 8px 28px rgba(0,0,0,.18)}
+  .actionbar .info{font-size:14px;opacity:.9}
+  .actionbar .btn{border-color:transparent}
+  .actionbar .btn.ghost{color:#e7e4dc}
+  .actionbar .btn.ghost:hover{background:rgba(255,255,255,.08)}
+
+  .kids{display:grid;gap:12px;margin-top:16px}
+  .kid.off{opacity:.55}
+  .kid-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+  .avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+  .kid-name{font-weight:700;font-size:15.5px}
+  .kid-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .kid-status{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line2)}
+  .dot.fill{background:#d7b46a}
+  .dot.done{background:var(--accent)}
+  .caret{transition:transform .2s;color:var(--muted)}
+  .kid.open .caret{transform:rotate(180deg)}
+  .kid-body{display:none;padding:2px 18px 18px;border-top:1px solid var(--line)}
+  .kid.open .kid-body{display:block}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.two{grid-template-columns:1fr}}
+
+  .switch{position:relative;width:38px;height:22px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .switch span{position:absolute;inset:0;background:var(--line2);border-radius:999px;transition:.2s;cursor:pointer}
+  .switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .switch input:checked+span{background:var(--accent)}
+  .switch input:checked+span:before{transform:translateX(16px)}
+
+  .photos{display:flex;gap:8px;flex-wrap:wrap}
+  .ph{position:relative;width:76px;height:76px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#f1eee7;display:grid;place-items:center}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .ph button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;font-size:13px;line-height:1}
+  .drop{width:76px;height:76px;border:1.5px dashed var(--line2);border-radius:12px;display:grid;place-items:center;color:var(--muted);cursor:pointer;font-size:12px;text-align:center;line-height:1.3;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+  .result{margin-top:16px;background:#fbfaf6;border:1px solid var(--line);border-radius:14px;padding:14px}
+  .result textarea{min-height:320px;background:#fff;font-size:14.5px;line-height:1.75}
+  .result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:14px;padding:8px 2px}
+  .spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent-line);border-top-color:var(--accent);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .list{display:grid;gap:10px}
+  .item{padding:14px 16px}
+  .item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .item-text{white-space:pre-wrap;color:var(--sub);font-size:13.5px;margin-top:8px;max-height:4.8em;overflow:hidden;position:relative}
+  .item.expanded .item-text{max-height:none;color:var(--ink)}
+  .item:not(.expanded) .item-text:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2em;background:linear-gradient(transparent,#fff)}
+  .spacer{flex:1}
+  .grid-kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .stat{display:flex;gap:18px;flex-wrap:wrap}
+  .stat div{font-size:13px;color:var(--sub)}
+  .stat b{display:block;font-size:20px;color:var(--ink)}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+  .toast{position:fixed;left:50%;top:20px;transform:translateX(-50%) translateY(-20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .banner{background:var(--warm);color:var(--warm-ink);border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<!-- ───────── PIN ───────── -->
+<div class="auth" id="authView" hidden>
+  <div class="card">
+    <h1>수업 피드백 노트 🌿</h1>
+    <p>이 기기에서 처음 한 번만 PIN을 입력해 주세요</p>
+    <div class="stack">
+      <input type="password" id="pinInput" placeholder="PIN" inputmode="numeric" autocomplete="current-password" style="text-align:center;font-size:18px;letter-spacing:.3em">
+      <button class="btn primary block" id="pinGo">들어가기</button>
+    </div>
+    <p class="hint" id="authCfg" style="margin-top:16px" hidden>⚠️ HTML 맨 아래 FUNCTION_URL을 먼저 채워 주세요.</p>
+  </div>
+</div>
+
+<div class="boot" id="bootView"><div class="loading"><div class="spin"></div>불러오는 중…</div></div>
+
+<!-- ───────── 앱 ───────── -->
+<div class="wrap" id="appView" hidden>
+  <header class="top">
+    <div class="brand">
+      <h1>수업 피드백 노트 🌿</h1>
+      <p>간단히 적으면, 선생님 말투 그대로 써 드려요 <span class="savestate" id="saveState">저장됨</span></p>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="week" class="on">수업 기록</button>
+      <button data-tab="kids">아이 프로필</button>
+      <button data-tab="lib">과거 피드백</button>
+      <button data-tab="mat">교구 사전</button>
+      <button data-tab="set">설정</button>
+    </nav>
+  </header>
+
+  <div class="banner" id="legacyBanner" hidden>
+    <span>이 브라우저에 예전에 쓰던 데이터가 있어요. Supabase로 옮길까요?</span>
+    <span class="row" style="gap:6px"><button class="btn sm" id="legacyLater">나중에</button><button class="btn sm primary" id="legacyGo">가져오기</button></span>
+  </div>
+
+  <!-- 수업 기록 -->
+  <section class="tab on" id="tab-week">
+    <div class="card pad">
+      <div class="weekbar">
+        <div>
+          <label class="f">수업 날짜</label>
+          <div class="datewrap"><input type="date" id="wDate"><select id="wPast" title="저장된 수업 불러오기"></select></div>
+        </div>
+        <div><label class="f">다음 수업 날짜</label><input type="date" id="wNext"></div>
+        <div class="span">
+          <label class="f">공통 제시교구 <span class="hint" style="display:inline;font-weight:400">· 입력 후 Enter</span></label>
+          <div class="row" style="flex-wrap:nowrap;align-items:stretch">
+            <div class="chipbox grow" id="wMatBox"></div>
+            <button class="btn" id="applyAll" title="켜져 있는 모든 아이에게 공통 교구를 넣어요">모두 적용</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="kids" id="kids"></div>
+    <div class="actionbar">
+      <div class="info" id="barInfo"></div>
+      <div class="row" style="gap:6px;flex-wrap:nowrap">
+        <button class="btn ghost sm" id="nextWeek">다음 수업으로 →</button>
+        <button class="btn primary" id="genAll">✨ 피드백 모두 생성</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 아이 프로필 -->
+  <section class="tab" id="tab-kids">
+    <div class="row" style="justify-content:space-between;margin-bottom:14px;align-items:center">
+      <div><h2>아이 프로필</h2><p class="hint">성향과 특징을 적어 두면 피드백에 자연스럽게 녹아들어요.</p></div>
+      <button class="btn primary" id="addKid">+ 아이 추가</button>
+    </div>
+    <div class="grid-kids" id="kidList"></div>
+  </section>
+
+  <!-- 과거 피드백 -->
+  <section class="tab" id="tab-lib">
+    <div class="card pad stack">
+      <div><h2>과거 피드백 넣기</h2><p class="hint">여러 개를 한꺼번에 붙여 넣어도 돼요. ‘✔️ 제시교구’가 나올 때마다, 또는 <b>---</b> 줄마다 나눠서 저장해요.</p></div>
+      <textarea id="libInput" style="min-height:160px" placeholder="예전에 보낸 피드백을 붙여 넣어 주세요"></textarea>
+      <div class="row">
+        <div class="grow"><label class="f">아이</label><select id="libKid"></select></div>
+        <div class="grow"><label class="f">날짜 (선택)</label><input type="date" id="libDate"></div>
+        <button class="btn primary" id="libAdd">저장하기</button>
+      </div>
+    </div>
+    <div class="card pad" style="margin-top:12px">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="stat" id="libStat"></div>
+        <select id="libFilter" style="width:auto"></select>
+      </div>
+    </div>
+    <div class="list" id="libList" style="margin-top:12px"></div>
+  </section>
+
+  <!-- 교구 사전 -->
+  <section class="tab" id="tab-mat">
+    <div class="row" style="justify-content:space-between;margin-bottom:14px;align-items:center">
+      <div><h2>교구 사전</h2><p class="hint">교구의 목적과 제시 방법이 피드백에 정확히 반영돼요.</p></div>
+      <button class="btn primary" id="addMat">+ 교구 추가</button>
+    </div>
+    <div class="row" style="margin-bottom:12px"><input type="text" id="matSearch" placeholder="교구 찾기" class="grow"></div>
+    <div class="list" id="matList"></div>
+  </section>
+
+  <!-- 설정 -->
+  <section class="tab" id="tab-set">
+    <div class="card pad stack">
+      <h2>기본 정보</h2>
+      <div class="two">
+        <div><label class="f">선생님 이름(호칭)</label><input type="text" id="sTeacher" placeholder="예: 다은 선생님"></div>
+        <div><label class="f">참고할 과거 피드백 개수</label><input type="number" id="sMaxEx" min="1" max="10"></div>
+      </div>
+      <div><label class="f">추가로 지킬 규칙</label><textarea id="sRules" placeholder="예: 마지막 인사는 항상 ‘다음 수업 시간에도 알차고 행복한 활동으로 찾아뵙겠습니다!’로 끝내기"></textarea></div>
+    </div>
+
+    <div class="card pad stack" style="margin-top:12px">
+      <div><h2>말투 가이드</h2><p class="hint">과거 피드백을 분석해 말투·구성·이모지 습관을 정리해요. 새 피드백이 쌓이면 다시 만들어 주세요.</p></div>
+      <textarea id="sStyle" style="min-height:180px" placeholder="아직 없어요. 아래 버튼으로 만들거나 직접 적어도 돼요."></textarea>
+      <div class="row"><button class="btn" id="mkStyle">🪄 과거 피드백으로 말투 가이드 만들기</button></div>
+    </div>
+
+    <div class="card pad stack" style="margin-top:12px">
+      <div><h2>AI 모델</h2><p class="hint">Supabase Edge Function(feedback-api)을 통해 호출해요.</p></div>
+      <select id="sModel">
+        <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (권장 · 빠르고 자연스러움)</option>
+        <option value="claude-opus-5-5">Claude Opus 5.5 (가장 섬세함)</option>
+        <option value="claude-haiku-5-5">Claude Haiku 5.5 (가장 빠름 · 저렴)</option>
+      </select>
+      <div class="row"><button class="btn" id="testApi">연결 테스트</button></div>
+    </div>
+
+    <div class="card pad stack" style="margin-top:12px">
+      <div><h2>데이터 · 기기</h2><p class="hint">PIN을 바꾸려면 Supabase Secrets의 APP_PIN을 바꾸세요. 모든 기기에서 새 PIN을 다시 입력하게 돼요.</p></div>
+      <div class="row">
+        <button class="btn" id="exportBtn">⬇ 백업 내보내기</button>
+        <button class="btn" id="legacyBtn" hidden>예전 브라우저 데이터 가져오기</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="logout" title="이 기기에 저장된 PIN을 지워요">🔒 이 기기 잠그기</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<input type="file" id="photoPick" accept="image/*" multiple hidden>
+<datalist id="matNames"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═════════════════════════════════════════════════════════
+   ① 여기만 채우세요 (Edge Function 주소)
+   ═════════════════════════════════════════════════════════ */
+const FUNCTION_URL = 'https://YOUR-PROJECT.supabase.co/functions/v1/feedback-api';
+/* ═════════════════════════════════════════════════════════ */
+
+const LEGACY_KEY = 'montessori-feedback-v1';
+const PIN_KEY = 'feedback-note-pin';
+const CONFIGURED = !FUNCTION_URL.includes('YOUR-PROJECT');
+let PIN = (() => { try { return localStorage.getItem(PIN_KEY) || ''; } catch (e) { return ''; } })();
+
+async function api(op, payload = {}) {
+  let r;
+  try {
+    r = await fetch(FUNCTION_URL, { method: 'POST', headers: { 'content-type': 'application/json', 'x-app-pin': PIN }, body: JSON.stringify({ op, ...payload }) });
+  } catch (e) { throw new Error('서버에 연결하지 못했어요. 인터넷 연결이나 FUNCTION_URL을 확인해 주세요'); }
+  let data; try { data = await r.json(); } catch (e) { throw new Error(`서버 응답을 읽지 못했어요 (${r.status})`); }
+  if (data?.error?.code === 'pin') { lock(); throw new Error(data.error.message); }
+  if (r.status === 401) throw new Error('Edge Function의 “Verify JWT”를 꺼 주세요');
+  if (!r.ok || data?.error) throw new Error(data?.error?.message || data?.message || data?.msg || `요청 실패 (${r.status})`);
+  return data;
+}
+
+const uuid = () => crypto.randomUUID();
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+
+const DEFAULT_MATERIALS = [
+  ['수막대','수','10cm부터 1m까지 10개의 막대로, 10cm마다 빨강·파랑이 번갈아 칠해져 있다. 1~10 수의 양을 길이로 몸소 느끼는 첫 수 교구. 양손으로 막대 양 끝을 잡고 가로로 운반하고, 긴 것부터 차례로 계단처럼 배열한 뒤, 빨강·파랑 칸을 손가락으로 짚으며 센다. 3단계 교수법(이것은 3이에요 → 3을 주세요 → 이것은 몇이에요?)으로 수 이름과 양을 연결한다. 빨간막대 경험이 선행된다.'],
+  ['무당벌레 퍼즐','감각·문화','작은 꼭지가 달린 조각으로 무당벌레의 머리, 날개, 다리, 더듬이 등 몸의 부분을 맞추는 퍼즐. 엄지·검지·중지로 꼭지를 잡는 집게 잡기를 통해 쓰기 준비와 소근육을 기르고, 눈과 손의 협응, 모양 변별력을 키운다. 곤충 몸 구조의 이름을 알아가고, 날개의 점을 세어 보며 수 활동으로 확장할 수 있다.'],
+  ['빨간막대','감각','10cm~1m의 빨간 막대 10개. 길이를 시각·근육 감각으로 변별하고 순서대로 배열한다. 수막대의 기초가 된다.'],
+  ['분홍탑','감각','1cm~10cm 분홍색 정육면체 10개. 크기 변별, 큰 것부터 쌓아 올리기, 집중력과 손의 조절력을 기른다.'],
+  ['갈색계단','감각','길이는 같고 굵기가 다른 갈색 각기둥 10개. 굵기 변별, 계단처럼 배열하며 분홍탑과 연결 활동도 한다.'],
+  ['꼭지원기둥','감각','꼭지가 달린 원기둥 블록. 높이·지름 변별, 세 손가락 집게 잡기로 쓰기 준비를 한다.'],
+  ['색판','감각','색 이름 알기, 같은 색 짝짓기, 같은 색의 진하기 순서 배열로 색 감각을 정련한다.'],
+  ['기하도형 서랍','감각','원, 삼각형, 사각형 등 평면도형 조각을 틀에 맞추며 모양을 변별하고 손가락으로 윤곽을 따라 그린다.'],
+  ['소리상자','감각','흔들었을 때 소리가 같은 짝을 찾고 크고 작은 소리 순서를 맞추며 청각을 정련한다.'],
+  ['촉감판','감각','거칠고 부드러운 면을 손끝으로 느껴 짝짓기하며 촉각을 섬세하게 만든다.'],
+  ['모래종이 숫자','수','모래종이로 된 숫자를 손가락으로 따라 쓰며 숫자의 모양과 이름을 연결한다. 3단계 교수법을 사용한다.'],
+  ['방추막대 상자','수','0~9 칸에 숫자만큼 방추막대를 넣으며 수와 양을 연결하고 0의 개념을 경험한다.'],
+  ['숫자카드와 셈돌','수','1~10 숫자 카드 아래 셈돌을 두 개씩 짝지어 놓으며 수량을 확인하고 홀수·짝수를 경험한다.'],
+  ['동물 퍼즐','문화','물고기, 새, 거북 등 동물의 몸 부분을 꼭지 조각으로 맞추며 몸 구조와 이름을 알아간다.'],
+  ['실꿰기','일상','구슬이나 조각에 끈을 꿰며 두 손 협응, 집중력, 소근육을 기른다.'],
+  ['따르기(붓기)','일상','주전자로 컵에 쌀이나 물을 따르며 손목 조절과 정확한 움직임, 집중력을 기른다.'],
+  ['숟가락 옮기기','일상','숟가락으로 그릇에서 그릇으로 옮기며 손목 조절과 눈손 협응을 기른다.'],
+  ['집게 옮기기','일상','집게로 물건을 집어 옮기며 집게 잡기와 손의 힘 조절을 익힌다.'],
+  ['단추 끼우기 틀','일상','옷 입기 틀로 단추를 끼우고 빼며 스스로 옷 입는 독립심과 소근육을 기른다.'],
+  ['매트 펴고 말기','일상','작업 공간을 스스로 준비하고 정리하며 질서감과 작업의 시작·끝을 익힌다.'],
+];
+
+/* ═════════════════════════════════════════════════════════
+   상태 · 행 변환
+   ═════════════════════════════════════════════════════════ */
+let S = null;
+const photoCache = {};   // path -> {dataUrl, b64, mediaType}
+const busy = {};
+const openKids = new Set();
+
+const fromKid = r => ({ id: r.id, name: r.name || '', birth: r.birth || '', gender: r.gender || '', traits: r.traits || '', note: r.note || '', sort: r.sort || 0 });
+const toKid = k => ({ id: k.id, name: k.name, birth: k.birth || null, gender: k.gender, traits: k.traits, note: k.note, sort: k.sort });
+const fromMat = r => ({ id: r.id, name: r.name || '', area: r.area || '', desc: r.descr || '' });
+const toMat = m => ({ id: m.id, name: m.name, area: m.area, descr: m.desc });
+const fromLib = r => ({ id: r.id, childId: r.child_id, date: r.date || '', text: r.text });
+const toLib = l => ({ id: l.id, child_id: l.childId || null, date: l.date || null, text: l.text });
+const fromSet = r => ({ teacher: r?.teacher || '', maxExamples: r?.max_examples || 4, rules: r?.rules || '', style: r?.style || '', model: r?.model || 'claude-sonnet-5-5', currentWeek: r?.current_week || '' });
+const toSet = s => ({ id: 1, teacher: s.teacher, max_examples: +s.maxExamples || 4, rules: s.rules, style: s.style, model: s.model, current_week: S.week.date || null });
+const fromEntry = r => ({ id: r.id, childId: r.child_id, on: r.is_on !== false, materials: r.materials || [], memo: r.memo || '', words: r.words || '', result: r.result || '', photos: r.photos || [] });
+const toEntry = e => ({ id: e.id, week_date: S.week.date, child_id: e.childId, is_on: e.on, materials: e.materials, memo: e.memo, words: e.words, result: e.result, photos: e.photos, updated_at: new Date().toISOString() });
+const toWeek = () => ({ date: S.week.date, next: S.week.next || null, materials: S.week.materials });
+const upsert = (table, rows) => rows.length ? api('upsert', { table, rows }) : null;
+
+/* ═════════════════════════════════════════════════════════
+   저장 (변경분만 모아서 upsert)
+   ═════════════════════════════════════════════════════════ */
+const dirty = { children: new Set(), materials: new Set(), feedback_library: new Set(), week_entries: new Set(), weeks: false, settings: false };
+let flushT = null, flushing = null;
+
+function setSave(st) {
+  const el = $('#saveState');
+  el.className = 'savestate ' + (st === 'saved' ? '' : st);
+  el.textContent = st === 'saving' ? '저장 중…' : st === 'error' ? '저장 실패' : '저장됨';
+}
+function mark(table, id) {
+  if (table === 'weeks' || table === 'settings') dirty[table] = true; else dirty[table].add(id);
+  if (table === 'week_entries') dirty.weeks = true;
+  setSave('saving');
+  clearTimeout(flushT); flushT = setTimeout(flush, 700);
+}
+const pending = () => dirty.weeks || dirty.settings || ['children', 'materials', 'feedback_library', 'week_entries'].some(t => dirty[t].size);
+
+async function flush() {
+  clearTimeout(flushT);
+  if (flushing) { await flushing; if (pending()) return flush(); return; }
+  if (!pending()) return;
+  flushing = (async () => {
+    const snap = {
+      children: [...dirty.children], materials: [...dirty.materials], feedback_library: [...dirty.feedback_library],
+      week_entries: [...dirty.week_entries], weeks: dirty.weeks, settings: dirty.settings,
+    };
+    ['children', 'materials', 'feedback_library', 'week_entries'].forEach(t => dirty[t].clear());
+    dirty.weeks = dirty.settings = false;
+    try {
+      await upsert('children', snap.children.map(kidById).filter(Boolean).map(toKid));
+      await upsert('materials', snap.materials.map(id => S.materials.find(m => m.id === id)).filter(Boolean).map(toMat));
+      if (snap.settings) await upsert('settings', [toSet(S.settings)]);
+      if (snap.weeks) {
+        await upsert('weeks', [toWeek()]);
+        if (!S.weeks.includes(S.week.date)) { S.weeks.push(S.week.date); S.weeks.sort().reverse(); drawPast(); }
+      }
+      await upsert('week_entries', snap.week_entries.map(cid => S.week.entries[cid]).filter(Boolean).map(toEntry));
+      await upsert('feedback_library', snap.feedback_library.map(id => S.library.find(l => l.id === id)).filter(Boolean).map(toLib));
+      setSave(pending() ? 'saving' : 'saved');
+    } catch (e) {
+      ['children', 'materials', 'feedback_library', 'week_entries'].forEach(t => snap[t].forEach(id => dirty[t].add(id)));
+      if (snap.weeks) dirty.weeks = true; if (snap.settings) dirty.settings = true;
+      setSave('error'); toast('저장하지 못했어요: ' + (e.message || e));
+      clearTimeout(flushT); flushT = setTimeout(flush, 5000);
+    }
+  })();
+  await flushing; flushing = null;
+}
+window.addEventListener('beforeunload', e => { if (pending()) { flush(); e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+
+/* ═════════════════════════════════════════════════════════
+   불러오기
+   ═════════════════════════════════════════════════════════ */
+async function loadAll() {
+  const d = await api('load');
+  const set = d.settings;
+  S = { children: d.children.map(fromKid), materials: d.materials.map(fromMat), library: d.library.map(fromLib), settings: fromSet(set), weeks: d.weeks.map(w => w.date), week: null };
+
+  if (!set) {   // 처음 시작: 기본 교구 사전 채우기
+    const rows = DEFAULT_MATERIALS.map(([name, area, descr]) => ({ id: uuid(), name, area, descr }));
+    if (!S.materials.length) { await api('insert', { table: 'materials', rows }); S.materials = rows.map(fromMat); }
+    S.settings.currentWeek = today();
+    await api('upsert', { table: 'settings', rows: [{ id: 1, current_week: S.settings.currentWeek }] });
+  }
+  await loadWeek(S.settings.currentWeek || today());
+}
+
+async function loadWeek(date) {
+  const { week: w, entries } = await api('week', { date });
+  S.week = { date, next: w?.next || '', materials: w?.materials || [], entries: {} };
+  entries.forEach(r => { S.week.entries[r.child_id] = fromEntry(r); });
+  openKids.clear();
+}
+
+/* ═════════════════════════════════════════════════════════
+   유틸
+   ═════════════════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200); }
+function kDate(iso) { if (!iso) return ''; const d = new Date(iso + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${'일월화수목금토'[d.getDay()]})`; }
+function age(birth) {
+  if (!birth) return '';
+  const [y, m] = birth.split('-').map(Number); const n = new Date();
+  const months = (n.getFullYear() - y) * 12 + (n.getMonth() + 1 - (m || 1));
+  if (months < 0) return '';
+  const yy = Math.floor(months / 12), mm = months % 12;
+  return yy < 1 ? `${mm}개월` : `만 ${yy}세${mm ? ' ' + mm + '개월' : ''}`;
+}
+const PALETTE = [['#e9f0eb', '#4f7a62'], ['#f3e9dc', '#8a5a2b'], ['#e8eef5', '#46648a'], ['#f4e6ea', '#9a4d62'], ['#efeadf', '#6f6440'], ['#ebe7f3', '#5e5490'], ['#e4f0f0', '#3f7474'], ['#f5ebe1', '#9a5f3a']];
+const colorOf = i => PALETTE[i % PALETTE.length];
+const kidById = id => S.children.find(k => k.id === id);
+const entryOf = cid => (S.week.entries[cid] ||= { id: uuid(), childId: cid, on: true, materials: [], memo: '', words: '', result: '', photos: [] });
+const matByName = n => S.materials.find(m => m.name.replace(/\s/g, '') === n.replace(/\s/g, ''));
+function copyText(t) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(t).then(() => toast('복사했어요'), () => fallbackCopy(t));
+  fallbackCopy(t);
+}
+function fallbackCopy(t) { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); toast('복사했어요'); } catch (e) { toast('복사에 실패했어요'); } a.remove(); }
+function autosize(el) { el.style.height = 'auto'; el.style.height = Math.max(el.scrollHeight + 2, 72) + 'px'; }
+function hasBatchim(name) { const c = (name || '').trim().slice(-1).charCodeAt(0); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; }
+const callName = n => n + (hasBatchim(n) ? '이' : '');
+
+/* ═════════════════════════════════════════════════════════
+   PIN
+   ═════════════════════════════════════════════════════════ */
+function show(view) { $('#authView').hidden = view !== 'auth'; $('#bootView').hidden = view !== 'boot'; $('#appView').hidden = view !== 'app'; }
+function lock() {
+  PIN = ''; try { localStorage.removeItem(PIN_KEY); } catch (e) {}
+  show('auth'); setTimeout(() => $('#pinInput').focus(), 50);
+}
+$('#pinGo').onclick = async () => {
+  const v = $('#pinInput').value.trim(); if (!v) return;
+  const b = $('#pinGo'); b.disabled = true; b.textContent = '확인 중…';
+  PIN = v;
+  try {
+    await api('ping');
+    try { localStorage.setItem(PIN_KEY, v); } catch (e) {}
+    $('#pinInput').value = ''; boot();
+  } catch (e) { toast(e.message); $('#pinInput').select(); }
+  b.disabled = false; b.textContent = '들어가기';
+};
+$('#pinInput').onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) $('#pinGo').click(); };
+$('#logout').onclick = async () => {
+  if (!confirm('이 기기에 저장된 PIN을 지울까요? 다음에 들어올 때 PIN을 다시 입력해야 해요.')) return;
+  await flush(); lock();
+};
+
+if (!CONFIGURED) { $('#authCfg').hidden = false; show('auth'); }
+else if (PIN) boot();
+else lock();
+
+async function boot() {
+  show('boot');
+  try {
+    await loadAll();
+    const hasLegacy = (() => { try { return !!localStorage.getItem(LEGACY_KEY); } catch (e) { return false; } })();
+    let dismissed = false; try { dismissed = localStorage.getItem(LEGACY_KEY + '-done') === '1'; } catch (e) {}
+    $('#legacyBtn').hidden = !hasLegacy;
+    $('#legacyBanner').hidden = !hasLegacy || dismissed;
+    show('app'); renderWeek();
+  } catch (e) {
+    if (!PIN) return;   // PIN이 틀려서 잠긴 경우
+    $('#bootView').innerHTML = `<div style="text-align:center;max-width:420px;padding:20px">
+      <p style="margin:0 0 14px">불러오지 못했어요<br><span class="hint">${esc(e.message || e)}</span></p>
+      <button class="btn" onclick="location.reload()">다시 시도</button></div>`;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════
+   탭
+   ═════════════════════════════════════════════════════════ */
+$('#tabs').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $$('section.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + b.dataset.tab));
+  ({ week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[b.dataset.tab]();
+});
+
+/* ═════════════════════════════════════════════════════════
+   칩 입력
+   ═════════════════════════════════════════════════════════ */
+function chipInput(box, list, onChange) {
+  const draw = () => {
+    box.innerHTML = list.map((m, i) => `<span class="chip">${esc(m)}<button data-i="${i}" aria-label="삭제">×</button></span>`).join('') +
+      `<input type="text" list="matNames" placeholder="${list.length ? '' : '교구 이름 (예: 수막대)'}">`;
+    const inp = box.querySelector('input');
+    const add = () => {
+      inp.value.split(',').map(s => s.trim()).filter(Boolean).forEach(v => { if (!list.includes(v)) list.push(v); });
+      inp.value = ''; onChange(); draw(); box.querySelector('input').focus();
+    };
+    inp.addEventListener('keydown', e => {
+      if (e.isComposing) return;
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); }
+      if (e.key === 'Backspace' && !inp.value && list.length) { list.pop(); onChange(); draw(); box.querySelector('input').focus(); }
+    });
+    inp.addEventListener('change', () => { if (S.materials.some(m => m.name === inp.value)) add(); });
+    inp.addEventListener('blur', () => { if (inp.value.trim()) add(); });
+  };
+  box.onclick = e => {
+    const b = e.target.closest('button[data-i]');
+    if (b) { list.splice(+b.dataset.i, 1); onChange(); draw(); }
+    else box.querySelector('input')?.focus();
+  };
+  draw();
+}
+function refreshDatalist() { $('#matNames').innerHTML = S.materials.map(m => `<option value="${esc(m.name)}">`).join(''); }
+
+/* ═════════════════════════════════════════════════════════
+   수업 기록
+   ═════════════════════════════════════════════════════════ */
+function drawPast() {
+  $('#wPast').innerHTML = `<option value="">저장된 수업</option>` + S.weeks.map(d => `<option value="${d}">${d.slice(0, 4)}. ${kDate(d)}</option>`).join('');
+}
+function renderWeek() {
+  refreshDatalist(); drawPast();
+  $('#wDate').value = S.week.date || '';
+  $('#wNext').value = S.week.next || '';
+  chipInput($('#wMatBox'), S.week.materials, () => mark('weeks'));
+  $('#kids').innerHTML = S.children.length
+    ? S.children.map((k, i) => kidCard(k, i)).join('')
+    : `<div class="card empty">아직 아이가 없어요.<br><button class="btn primary" style="margin-top:12px" onclick="document.querySelector('[data-tab=kids]').click()">아이 프로필 추가하기</button></div>`;
+  S.children.forEach(k => mountKid(k.id));
+  updateBar();
+}
+async function switchWeek(date) {
+  if (!date || date === S.week.date) return;
+  await flush();
+  show('boot');
+  try { await loadWeek(date); S.settings.currentWeek = date; mark('settings'); }
+  catch (e) { toast(e.message); }
+  show('app'); renderWeek();
+}
+$('#wDate').onchange = e => switchWeek(e.target.value);
+$('#wPast').onchange = e => { const d = e.target.value; e.target.value = ''; switchWeek(d); };
+$('#wNext').onchange = e => { S.week.next = e.target.value; mark('weeks'); };
+$('#nextWeek').onclick = () => switchWeek(S.week.next || addDays(S.week.date, 7));
+$('#applyAll').onclick = () => {
+  if (!S.week.materials.length) return toast('공통 교구를 먼저 입력해 주세요');
+  S.children.forEach(k => {
+    const en = entryOf(k.id); if (!en.on) return;
+    S.week.materials.forEach(m => { if (!en.materials.includes(m)) en.materials.push(m); });
+    mark('week_entries', k.id);
+  });
+  renderWeek(); toast('모든 아이에게 적용했어요');
+};
+
+function statusOf(cid) {
+  const en = S.week.entries[cid]; if (!en) return '';
+  if (en.result) return 'done';
+  if (en.memo || en.words || en.materials.length || en.photos.length) return 'fill';
+  return '';
+}
+function kidCard(k, i) {
+  const en = S.week.entries[k.id] || { on: true, materials: [], memo: '', words: '', result: '' };
+  const [bg, fg] = colorOf(i); const st = statusOf(k.id);
+  return `
+  <div class="card kid ${en.on ? '' : 'off'} ${openKids.has(k.id) ? 'open' : ''}" data-id="${k.id}">
+    <div class="kid-head" data-act="toggle">
+      <div class="avatar" style="background:${bg};color:${fg}">${esc((k.name || '?').slice(-2))}</div>
+      <div>
+        <div class="kid-name">${esc(k.name || '이름 없음')}</div>
+        <div class="kid-meta">
+          ${age(k.birth) ? `<span class="tag">${age(k.birth)}</span>` : ''}
+          ${k.gender ? `<span class="tag">${esc(k.gender)}</span>` : ''}
+          ${en.materials.length ? `<span class="hint">${esc(en.materials.join(' · '))}</span>` : ''}
+        </div>
+      </div>
+      <div class="kid-status">
+        <span class="dot ${st}" title="${st === 'done' ? '작성 완료' : st === 'fill' ? '기록 중' : '비어 있음'}"></span>
+        <label class="switch" title="이번 수업 포함"><input type="checkbox" data-f="on" ${en.on ? 'checked' : ''}><span></span></label>
+        <svg class="caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+    <div class="kid-body">
+      <div class="stack" style="margin-top:14px">
+        <div><label class="f">제시교구</label><div class="chipbox" data-box="mat"></div></div>
+        <div class="two">
+          <div>
+            <label class="f">활동 메모 <span class="hint" style="display:inline;font-weight:400">· 교구로 어떻게 했는지</span></label>
+            <textarea data-f="memo" placeholder="예: 10막대 혼자 양손으로 옮김 / 칸 세며 '이건 5' / 퍼즐 날개 점 세어 봄, 조각 돌려가며 끝까지 맞춤">${esc(en.memo)}</textarea>
+          </div>
+          <div>
+            <label class="f">아이가 한 말 · 에피소드</label>
+            <textarea data-f="words" placeholder="예: &quot;이건 아기 막대야!&quot; / 엄마가 결혼식 가서 늦게 온대">${esc(en.words)}</textarea>
+          </div>
+        </div>
+        <div><label class="f">사진 <span class="hint" style="display:inline;font-weight:400">· 활동 모습을 참고해요 (최대 5장)</span></label><div class="photos" data-box="ph"></div></div>
+        <div class="row" style="justify-content:flex-end;gap:8px">
+          <button class="btn ghost sm" data-act="prompt">프롬프트 복사</button>
+          <button class="btn primary" data-act="gen">✨ ${en.result ? '다시 쓰기' : '피드백 쓰기'}</button>
+        </div>
+      </div>
+      <div data-box="result"></div>
+    </div>
+  </div>`;
+}
+function mountKid(cid) {
+  const card = $(`.kid[data-id="${cid}"]`); if (!card) return;
+  const en = entryOf(cid);
+  chipInput(card.querySelector('[data-box=mat]'), en.materials, () => { mark('week_entries', cid); refreshHead(cid); });
+  if (card.classList.contains('open')) card.querySelectorAll('textarea[data-f]').forEach(autosize);
+  drawPhotos(cid); drawResult(cid);
+}
+function refreshHead(cid) {
+  const card = $(`.kid[data-id="${cid}"]`); if (!card) return;
+  const k = kidById(cid); const tmp = document.createElement('div'); tmp.innerHTML = kidCard(k, S.children.indexOf(k));
+  card.querySelector('.kid-head').replaceWith(tmp.querySelector('.kid-head'));
+  card.classList.toggle('off', !entryOf(cid).on);
+  updateBar();
+}
+
+/* 사진 */
+let pickFor = null;
+function drawPhotos(cid) {
+  const box = $(`.kid[data-id="${cid}"] [data-box=ph]`); if (!box) return;
+  const en = entryOf(cid);
+  box.innerHTML = en.photos.map((p, i) => `<div class="ph">${photoCache[p] ? `<img src="${photoCache[p].dataUrl}" alt="">` : `<div class="spin"></div>`}<button data-rm="${i}" aria-label="삭제">×</button></div>`).join('') +
+    (en.photos.length < 5 ? `<div class="drop" data-act="pick">＋<br>사진</div>` : '');
+  box.onclick = async e => {
+    const rm = e.target.closest('[data-rm]');
+    if (rm) {
+      const [path] = en.photos.splice(+rm.dataset.rm, 1);
+      mark('week_entries', cid); drawPhotos(cid); refreshHead(cid);
+      api('photo_remove', { paths: [path] }).catch(e => toast('사진 삭제 실패: ' + e.message));
+      return;
+    }
+    if (e.target.closest('[data-act=pick]')) { pickFor = cid; $('#photoPick').click(); }
+  };
+  const drop = box.querySelector('.drop');
+  if (drop) {
+    drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave = () => drop.classList.remove('over');
+    drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); addPhotos(cid, e.dataTransfer.files); };
+  }
+  en.photos.filter(p => !photoCache[p]).forEach(p => loadPhoto(p).then(() => drawPhotos(cid)).catch(() => {}));
+}
+$('#photoPick').onchange = e => { if (pickFor) addPhotos(pickFor, e.target.files); e.target.value = ''; };
+
+async function addPhotos(cid, files) {
+  const en = entryOf(cid);
+  for (const f of [...files].filter(f => f.type.startsWith('image/'))) {
+    if (en.photos.length >= 5) { toast('사진은 아이당 5장까지예요'); break; }
+    try {
+      const p = await shrink(f);
+      const path = `${S.week.date}/${cid}/${uuid()}.jpg`;
+      await api('photo_upload', { path, b64: p.b64 });
+      photoCache[path] = p; en.photos.push(path); mark('week_entries', cid); drawPhotos(cid);
+    } catch (e) { toast('사진을 올리지 못했어요: ' + (e.message || e)); }
+  }
+  refreshHead(cid);
+}
+function shrink(file, max = 1024) {
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      const dataUrl = c.toDataURL('image/jpeg', 0.82);
+      res({ dataUrl, b64: dataUrl.split(',')[1], mediaType: 'image/jpeg' });
+    };
+    img.onerror = rej; img.src = url;
+  });
+}
+const loading = {};
+function loadPhoto(path) {
+  if (photoCache[path]) return Promise.resolve(photoCache[path]);
+  return loading[path] ||= (async () => {
+    const { b64, mediaType } = await api('photo_get', { path });
+    return (photoCache[path] = { dataUrl: `data:${mediaType};base64,${b64}`, b64, mediaType });
+  })().finally(() => delete loading[path]);
+}
+
+/* 결과 */
+function drawResult(cid) {
+  const box = $(`.kid[data-id="${cid}"] [data-box=result]`); if (!box) return;
+  const en = entryOf(cid);
+  if (busy[cid]) { box.innerHTML = `<div class="result"><div class="loading"><div class="spin"></div>과거 피드백 말투로 쓰는 중이에요…</div></div>`; return; }
+  if (!en.result) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <div class="result">
+      <div class="result-head">
+        <b style="font-size:14px">완성된 피드백</b>
+        <div class="row" style="gap:6px">
+          <button class="btn sm" data-act="copyRes">복사</button>
+          <button class="btn sm" data-act="saveLib" title="과거 피드백에 저장하면 다음부터 말투 학습에 쓰여요">📚 학습 자료로 저장</button>
+        </div>
+      </div>
+      <textarea data-f="result">${esc(en.result)}</textarea>
+    </div>`;
+  autosize(box.querySelector('textarea'));
+}
+
+$('#kids').addEventListener('click', e => {
+  const card = e.target.closest('.kid'); if (!card) return;
+  const cid = card.dataset.id;
+  if (e.target.closest('.switch')) return;
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if (act === 'toggle') {
+    card.classList.toggle('open');
+    if (card.classList.contains('open')) { openKids.add(cid); card.querySelectorAll('textarea').forEach(autosize); } else openKids.delete(cid);
+  }
+  if (act === 'gen') generate(cid);
+  if (act === 'prompt') promptCopy(cid);
+  if (act === 'copyRes') copyText(entryOf(cid).result);
+  if (act === 'saveLib') {
+    const en = entryOf(cid); const t = en.result.trim(); if (!t) return;
+    if (S.library.some(l => l.text.trim() === t)) return toast('이미 저장된 피드백이에요');
+    const l = { id: uuid(), childId: cid, date: S.week.date, text: t };
+    S.library.unshift(l); mark('feedback_library', l.id); toast('학습 자료로 저장했어요');
+  }
+});
+$('#kids').addEventListener('input', e => {
+  const card = e.target.closest('.kid'); const f = e.target.dataset.f; if (!card || !f || f === 'on') return;
+  const cid = card.dataset.id; const en = entryOf(cid);
+  en[f] = e.target.value; if (e.target.tagName === 'TEXTAREA') autosize(e.target);
+  mark('week_entries', cid);
+  if (f !== 'result') { card.querySelector('.dot').className = 'dot ' + statusOf(cid); updateBar(); }
+});
+$('#kids').addEventListener('change', e => {
+  if (e.target.dataset.f !== 'on') return;
+  const cid = e.target.closest('.kid').dataset.id; entryOf(cid).on = e.target.checked; mark('week_entries', cid); refreshHead(cid);
+});
+function updateBar() {
+  const on = S.children.filter(k => (S.week.entries[k.id]?.on ?? true));
+  const done = on.filter(k => S.week.entries[k.id]?.result).length;
+  $('#barInfo').textContent = `${kDate(S.week.date)} · ${on.length}명 수업 · ${done}명 작성 완료`;
+}
+
+$('#genAll').onclick = async () => {
+  const fill = S.children.filter(k => (S.week.entries[k.id]?.on ?? true) && statusOf(k.id) === 'fill').map(k => k.id);
+  const any = S.children.filter(k => (S.week.entries[k.id]?.on ?? true) && statusOf(k.id)).map(k => k.id);
+  if (!any.length) return toast('기록이 있는 아이가 없어요');
+  if (!fill.length && !confirm('모두 이미 작성되어 있어요. 전부 다시 쓸까요?')) return;
+  const target = fill.length ? fill : any;
+  $('#genAll').disabled = true;
+  let i = 0; const worker = async () => { while (i < target.length) await generate(target[i++], true); };
+  await Promise.all([worker(), worker()]);
+  $('#genAll').disabled = false; toast('모두 작성했어요 ✨');
+};
+
+/* ═════════════════════════════════════════════════════════
+   프롬프트
+   ═════════════════════════════════════════════════════════ */
+function pickExamples(cid) {
+  const n = Math.max(1, Math.min(10, +S.settings.maxExamples || 4));
+  const byDate = (a, b) => (b.date || '').localeCompare(a.date || '');
+  const mine = S.library.filter(l => l.childId === cid).sort(byDate);
+  const others = S.library.filter(l => l.childId !== cid).sort(byDate);
+  const k = Math.ceil(n * 0.6);
+  const out = [...mine.slice(0, k), ...others].slice(0, n);
+  if (out.length < n) out.push(...mine.slice(k, k + n - out.length));
+  return out;
+}
+function systemPrompt() {
+  const st = S.settings;
+  return `당신은 몬테소리 교육 전문가이자 ${st.teacher || '담당 선생님'}을 대신해 학부모님께 보내는 개별 수업 피드백을 쓰는 사람입니다.
+몬테소리 교구의 목적, 바른 제시 방법(운반, 배열, 3단계 교수법 등), 영유아 발달 단계를 정확히 알고, 아이가 한 활동의 의미를 따뜻하고 구체적으로 전합니다.
+
+[반드시 지킬 것]
+1. <과거 피드백>의 말투, 어미(~했어요, ~답니다, ~더라고요), 이모지 사용 습관, 문단 구성, 분량을 그대로 따릅니다. 과거 피드백 문장을 그대로 베끼지 말고 새로 씁니다.
+2. 수업 메모와 사진에 있는 사실만 씁니다. 메모에 없는 에피소드, 아이가 한 말, 가족·친구 이야기를 지어내지 않습니다. 메모가 짧으면 교구의 목적과 발달적 의미로 자연스럽게 채우되, 사실처럼 꾸며 내지 않습니다.
+3. 메모에 적힌 아이의 말은 표현을 살려 큰따옴표로 옮깁니다.
+4. 사진은 눈에 보이는 것(손 모양, 교구 배열, 자세, 집중하는 모습)만 활용하고 감정이나 상황을 추측하지 않습니다.
+5. 다른 아이와 비교하지 않습니다.
+6. 교구 설명이 주어지면 그 교구의 실제 사용 방법과 의미에 맞게 씁니다.
+7. 결과는 학부모님께 보낼 피드백 본문만 출력합니다. 머리말, 설명, 마크다운 기호(#, **, -)는 쓰지 않습니다.
+
+[기본 형식] (과거 피드백 형식이 다르면 과거 피드백을 따릅니다)
+✔️ 제시교구
+
+🔶 교구 이름 (교구마다 한 줄씩, 사이에 빈 줄)
+
+도입 문단 → 교구별 활동 문단 → 아이가 한 말·에피소드 문단 → 아이의 성장을 비추는 마무리 문단 → 다음 수업 인사
+➰✨💛🧡
+다음 수업 시간 날짜에 만나요! 🗓️🎈
+${st.style ? `\n[말투 가이드]\n${st.style}` : ''}${st.rules ? `\n[추가 규칙]\n${st.rules}` : ''}`;
+}
+function buildPrompt(cid) {
+  const k = kidById(cid); const en = entryOf(cid);
+  const mats = en.materials.length ? en.materials : S.week.materials;
+  const matInfo = mats.map(n => { const m = matByName(n); return m ? `- ${m.name} (${m.area}): ${m.desc}` : `- ${n}`; }).join('\n');
+  const ex = pickExamples(cid);
+  const exText = ex.length
+    ? ex.map((l, i) => `<예시 ${i + 1}${kidById(l.childId) ? ` · ${kidById(l.childId).name}` : ''}>\n${l.text.slice(0, 3000)}\n</예시 ${i + 1}>`).join('\n\n')
+    : '(아직 과거 피드백이 없어요. 기본 형식과 따뜻한 말투로 써 주세요.)';
+  const imgs = en.photos.map(p => photoCache[p]).filter(Boolean);
+  const text = `<과거 피드백>
+${exText}
+</과거 피드백>
+
+<아이 정보>
+이름: ${k.name}
+나이: ${k.birth ? `${k.birth.slice(0, 4)}년생, ${age(k.birth)}` : '미상'}
+성별: ${k.gender || '미상'}
+성향·특징: ${k.traits || '-'}
+${k.note ? `요즘 관심사·이어갈 점: ${k.note}\n` : ''}</아이 정보>
+
+<오늘 수업>
+수업 날짜: ${kDate(S.week.date) || '-'}
+제시교구:
+${matInfo || '- (없음)'}
+
+활동 메모:
+${en.memo || '-'}
+
+아이가 한 말 · 에피소드:
+${en.words || '-'}
+
+다음 수업: ${kDate(S.week.next) || '(날짜 칸은 "__/__(_)"로 비워 두기)'}
+${imgs.length ? `사진: ${imgs.length}장 첨부 (활동 모습 참고용)` : ''}
+</오늘 수업>
+
+위 내용으로 ${callName(k.name)}의 오늘 수업 피드백을 과거 피드백과 같은 결로 써 주세요. 아이는 과거 피드백처럼 "${callName(k.name)}는" 형태로 부릅니다.`;
+  const content = imgs.map(p => ({ type: 'image', source: { type: 'base64', media_type: p.mediaType, data: p.b64 } }));
+  content.push({ type: 'text', text });
+  const sys = systemPrompt();
+  return { system: sys, content, plain: `${sys}\n\n────────\n\n${text}` };
+}
+async function promptCopy(cid) {
+  await Promise.all(entryOf(cid).photos.map(p => loadPhoto(p).catch(() => {})));
+  copyText(buildPrompt(cid).plain);
+  if (entryOf(cid).photos.length) setTimeout(() => toast('사진은 채팅에 따로 첨부해 주세요'), 2300);
+}
+
+/* ═════════════════════════════════════════════════════════
+   AI 호출 (Supabase Edge Function)
+   ═════════════════════════════════════════════════════════ */
+async function callClaude(system, content, maxTokens = 2000) {
+  const data = await api('ai', { model: S.settings.model, max_tokens: maxTokens, system, messages: [{ role: 'user', content }] });
+  const out = (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+  if (!out) throw new Error('빈 응답이 왔어요');
+  return out;
+}
+const cleanOut = t => t.replace(/^```[a-z]*\n?|```$/g, '').replace(/\*\*(.+?)\*\*/g, '$1').trim();
+
+async function generate(cid, silent) {
+  if (busy[cid]) return;
+  const en = entryOf(cid);
+  if (!en.memo && !en.words && !en.materials.length && !S.week.materials.length) { if (!silent) toast('교구나 메모를 먼저 적어 주세요'); return; }
+  const card = $(`.kid[data-id="${cid}"]`);
+  if (card && !card.classList.contains('open')) { card.classList.add('open'); openKids.add(cid); }
+  busy[cid] = true; drawResult(cid);
+  try {
+    await Promise.all(en.photos.map(p => loadPhoto(p).catch(() => {})));
+    const p = buildPrompt(cid);
+    en.result = cleanOut(await callClaude(p.system, p.content));
+    mark('week_entries', cid);
+  } catch (e) { toast(`${kidById(cid)?.name || ''}: ${e.message}`); }
+  finally {
+    busy[cid] = false; drawResult(cid); refreshHead(cid);
+    const btn = $(`.kid[data-id="${cid}"] [data-act=gen]`); if (btn) btn.textContent = `✨ ${en.result ? '다시 쓰기' : '피드백 쓰기'}`;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════
+   아이 프로필
+   ═════════════════════════════════════════════════════════ */
+function renderKids() {
+  $('#kidList').innerHTML = S.children.length ? S.children.map((k, i) => {
+    const [bg, fg] = colorOf(i); const cnt = S.library.filter(l => l.childId === k.id).length;
+    return `
+    <div class="card pad stack" data-id="${k.id}">
+      <div class="row" style="align-items:center;flex-wrap:nowrap">
+        <div class="avatar" style="background:${bg};color:${fg}">${esc((k.name || '?').slice(-2))}</div>
+        <input type="text" data-k="name" value="${esc(k.name)}" placeholder="이름" style="font-weight:700">
+        <button class="btn ghost sm danger" data-act="del">삭제</button>
+      </div>
+      <div class="two">
+        <div><label class="f">생년월</label><input type="month" data-k="birth" value="${esc(k.birth)}"></div>
+        <div><label class="f">성별</label><select data-k="gender"><option value="">선택 안 함</option>${['여아', '남아'].map(g => `<option ${k.gender === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+      </div>
+      <div><label class="f">성향 · 특징</label><textarea data-k="traits" placeholder="예: 조용히 관찰한 뒤 시작함, 공룡을 좋아함, 동생이 있음">${esc(k.traits)}</textarea></div>
+      <div><label class="f">요즘 관심사 · 이어갈 점</label><textarea data-k="note" placeholder="예: 숫자 5까지 셈, 다음엔 모래종이 숫자 제시 예정">${esc(k.note)}</textarea></div>
+      <div class="row" style="justify-content:space-between;align-items:center"><span class="tag">${age(k.birth) || '나이 미입력'}</span><span class="hint">과거 피드백 ${cnt}개</span></div>
+    </div>`;
+  }).join('') : `<div class="card empty" style="grid-column:1/-1">‘+ 아이 추가’로 수업하는 아이들을 등록해 주세요.</div>`;
+}
+$('#kidList').addEventListener('input', e => {
+  const c = e.target.closest('[data-id]'); const f = e.target.dataset.k; if (!c || !f) return;
+  kidById(c.dataset.id)[f] = e.target.value; mark('children', c.dataset.id);
+});
+$('#kidList').addEventListener('change', e => { if (e.target.dataset.k === 'birth') renderKids(); });
+$('#kidList').addEventListener('click', async e => {
+  if (e.target.dataset.act !== 'del') return;
+  const id = e.target.closest('[data-id]').dataset.id; const k = kidById(id);
+  if (!confirm(`${k.name || '이 아이'} 프로필을 삭제할까요?\n수업 기록도 함께 지워지고, 과거 피드백은 ‘아이 미지정’으로 남아요.`)) return;
+  await flush();
+  try { await api('delete', { table: 'children', id }); } catch (err) { return toast(err.message); }
+  S.children = S.children.filter(x => x.id !== id);
+  S.library.forEach(l => { if (l.childId === id) l.childId = null; });
+  delete S.week.entries[id]; renderKids();
+});
+$('#addKid').onclick = () => {
+  const k = { id: uuid(), name: '', birth: '2023-01', gender: '', traits: '', note: '', sort: Math.max(0, ...S.children.map(x => x.sort)) + 1 };
+  S.children.push(k); mark('children', k.id); renderKids(); $('#kidList').lastElementChild.querySelector('input').focus();
+};
+
+/* ═════════════════════════════════════════════════════════
+   과거 피드백
+   ═════════════════════════════════════════════════════════ */
+function kidOptions(sel, withAuto) {
+  return (withAuto ? `<option value="auto">본문에서 이름 자동 찾기</option>` : '') +
+    S.children.map(k => `<option value="${k.id}" ${sel === k.id ? 'selected' : ''}>${esc(k.name || '이름 없음')}</option>`).join('') +
+    `<option value="" ${sel === null ? 'selected' : ''}>아이 미지정</option>`;
+}
+let libFilter = 'all';
+function renderLib() {
+  $('#libKid').innerHTML = kidOptions(undefined, true);
+  $('#libFilter').innerHTML = `<option value="all">전체 보기</option>` + S.children.map(k => `<option value="${k.id}">${esc(k.name)}</option>`).join('') + `<option value="none">아이 미지정</option>`;
+  $('#libFilter').value = libFilter;
+  const kids = new Set(S.library.map(l => l.childId).filter(Boolean)).size;
+  $('#libStat').innerHTML = `<div><b>${S.library.length}</b>저장된 피드백</div><div><b>${kids}</b>명의 아이</div><div><b>${S.settings.style ? '있음' : '없음'}</b>말투 가이드</div>`;
+  const list = S.library.filter(l => libFilter === 'all' || (libFilter === 'none' ? !l.childId : l.childId === libFilter)).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  $('#libList').innerHTML = list.length ? list.map(l => `
+    <div class="card item" data-id="${l.id}">
+      <div class="item-head">
+        <select data-l="childId" style="width:auto;padding:5px 10px;font-size:13px">${kidOptions(l.childId ?? null)}</select>
+        <input type="date" data-l="date" value="${esc(l.date)}" style="width:auto;padding:5px 10px;font-size:13px">
+        <span class="spacer"></span>
+        <button class="btn ghost sm" data-act="more">펼치기</button>
+        <button class="btn ghost sm danger" data-act="del">삭제</button>
+      </div>
+      <div class="item-text">${esc(l.text)}</div>
+    </div>`).join('') : `<div class="empty">아직 저장된 피드백이 없어요.<br>위에 예전 피드백을 붙여 넣어 주세요.</div>`;
+}
+function splitFeedback(raw) {
+  let parts = raw.split(/\n\s*(?:-{3,}|={3,})\s*\n/);
+  if (parts.length === 1) parts = raw.split(/(?=✔️\s*제시\s*교구)/);
+  return parts.map(s => s.trim()).filter(s => s.length > 30);
+}
+function detectKid(text) {
+  const hits = S.children.filter(k => k.name && k.name.length >= 2 && text.includes(k.name));
+  if (!hits.length) return null;
+  return hits.map(k => [k.id, text.split(k.name).length]).sort((a, b) => b[1] - a[1])[0][0];
+}
+function guessDate(t) {
+  const m = t.match(/(\d{1,2})\/(\d{1,2})\s*\(/); if (!m) return '';
+  const y = new Date().getFullYear();
+  return addDays(`${y}-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}`, -7);   // ‘다음 수업’의 일주일 전으로 추정
+}
+$('#libAdd').onclick = async () => {
+  const raw = $('#libInput').value.trim(); if (!raw) return toast('피드백을 붙여 넣어 주세요');
+  const parts = splitFeedback(raw); if (!parts.length) return toast('내용이 너무 짧아요');
+  const sel = $('#libKid').value; const date = $('#libDate').value;
+  let unk = 0;
+  const rows = parts.map(t => {
+    const childId = sel === 'auto' ? detectKid(t) : (sel || null);
+    if (!childId) unk++;
+    return { id: uuid(), childId, date: date || guessDate(t) || '', text: t };
+  });
+  const b = $('#libAdd'); b.disabled = true;
+  try { await api('insert', { table: 'feedback_library', rows: rows.map(toLib) }); }
+  catch (err) { b.disabled = false; return toast('저장하지 못했어요: ' + err.message); }
+  b.disabled = false;
+  S.library.unshift(...rows); $('#libInput').value = ''; renderLib();
+  toast(`${rows.length}개 저장했어요${unk ? ` · ${unk}개는 아이를 직접 골라 주세요` : ''}`);
+};
+$('#libFilter').onchange = e => { libFilter = e.target.value; renderLib(); };
+$('#libList').addEventListener('change', e => {
+  const c = e.target.closest('[data-id]'); const f = e.target.dataset.l; if (!c || !f) return;
+  const l = S.library.find(x => x.id === c.dataset.id); l[f] = e.target.value || (f === 'childId' ? null : ''); mark('feedback_library', l.id);
+});
+$('#libList').addEventListener('click', async e => {
+  const c = e.target.closest('[data-id]'); const a = e.target.dataset.act; if (!c || !a) return;
+  if (a === 'more') { c.classList.toggle('expanded'); e.target.textContent = c.classList.contains('expanded') ? '접기' : '펼치기'; }
+  if (a === 'del' && confirm('이 피드백을 삭제할까요?')) {
+    dirty.feedback_library.delete(c.dataset.id);
+    try { await api('delete', { table: 'feedback_library', id: c.dataset.id }); } catch (err) { return toast(err.message); }
+    S.library = S.library.filter(x => x.id !== c.dataset.id); renderLib();
+  }
+});
+
+/* ═════════════════════════════════════════════════════════
+   교구 사전
+   ═════════════════════════════════════════════════════════ */
+function renderMats() {
+  const qy = ($('#matSearch').value || '').trim();
+  const list = S.materials.filter(m => !qy || (m.name + m.area + m.desc).includes(qy));
+  $('#matList').innerHTML = list.length ? list.map(m => `
+    <div class="card item" data-id="${m.id}">
+      <div class="row" style="flex-wrap:nowrap;align-items:center">
+        <input type="text" data-m="name" value="${esc(m.name)}" placeholder="교구 이름" style="font-weight:700;flex:2">
+        <input type="text" data-m="area" value="${esc(m.area)}" placeholder="영역" style="flex:1;max-width:140px">
+        <button class="btn ghost sm danger" data-act="del">삭제</button>
+      </div>
+      <textarea data-m="desc" style="margin-top:8px" placeholder="목적, 제시 방법, 아이가 얻는 것">${esc(m.desc)}</textarea>
+    </div>`).join('') : `<div class="empty">찾는 교구가 없어요</div>`;
+  $$('#matList textarea').forEach(autosize);
+}
+$('#matSearch').oninput = renderMats;
+$('#matList').addEventListener('input', e => {
+  const c = e.target.closest('[data-id]'); const f = e.target.dataset.m; if (!c || !f) return;
+  S.materials.find(x => x.id === c.dataset.id)[f] = e.target.value; if (e.target.tagName === 'TEXTAREA') autosize(e.target);
+  mark('materials', c.dataset.id);
+});
+$('#matList').addEventListener('click', async e => {
+  if (e.target.dataset.act !== 'del') return;
+  const c = e.target.closest('[data-id]'); if (!confirm('이 교구를 삭제할까요?')) return;
+  dirty.materials.delete(c.dataset.id);
+  try { await api('delete', { table: 'materials', id: c.dataset.id }); } catch (err) { return toast(err.message); }
+  S.materials = S.materials.filter(x => x.id !== c.dataset.id); renderMats();
+});
+$('#addMat').onclick = () => {
+  $('#matSearch').value = '';
+  const m = { id: uuid(), name: '', area: '', desc: '' }; S.materials.unshift(m); mark('materials', m.id);
+  renderMats(); $('#matList input').focus();
+};
+
+/* ═════════════════════════════════════════════════════════
+   설정
+   ═════════════════════════════════════════════════════════ */
+function renderSettings() {
+  const st = S.settings;
+  $('#sTeacher').value = st.teacher; $('#sMaxEx').value = st.maxExamples; $('#sRules').value = st.rules;
+  $('#sStyle').value = st.style; $('#sModel').value = st.model;
+  autosize($('#sStyle'));
+}
+[['#sTeacher', 'teacher'], ['#sMaxEx', 'maxExamples'], ['#sRules', 'rules'], ['#sStyle', 'style']]
+  .forEach(([sel, k]) => $(sel).addEventListener('input', e => { S.settings[k] = e.target.value; mark('settings'); }));
+$('#sModel').onchange = e => { S.settings.model = e.target.value; mark('settings'); };
+
+$('#testApi').onclick = async e => {
+  const b = e.target; b.disabled = true; b.textContent = '확인 중…';
+  try { toast((await callClaude('짧게 답하세요.', [{ type: 'text', text: '"연결됐어요 🌿" 라고만 답해 주세요.' }], 50)).slice(0, 40)); }
+  catch (err) { toast(err.message); }
+  b.disabled = false; b.textContent = '연결 테스트';
+};
+
+$('#mkStyle').onclick = async e => {
+  if (!S.library.length) return toast('과거 피드백을 먼저 넣어 주세요');
+  const b = e.target; b.disabled = true; b.textContent = '분석 중…';
+  let corpus = '', n = 0;
+  for (const l of [...S.library].sort((a, b) => (b.date || '').localeCompare(a.date || ''))) {
+    if (corpus.length + l.text.length > 40000) break;
+    corpus += `\n\n<피드백 ${++n}>\n${l.text}\n</피드백 ${n}>`;
+  }
+  const sys = '당신은 글쓰기 문체 분석가입니다. 몬테소리 선생님이 학부모님께 보낸 수업 피드백들을 분석해, 다른 사람이 같은 결로 쓸 수 있는 말투 가이드를 만듭니다. 특정 아이의 개인 에피소드는 넣지 말고, 반복되는 형식·표현 습관만 정리합니다. 마크다운 기호 없이 "· "로 시작하는 짧은 항목으로 씁니다.';
+  const user = `${corpus}\n\n위 피드백 ${n}개를 분석해 다음을 정리해 주세요:
+· 전체 구성 순서와 문단 수, 대략적인 글자 수
+· 자주 쓰는 어미와 말투 (예시 표현 포함)
+· 이모지 사용 위치와 자주 쓰는 이모지
+· 아이를 부르는 방식, 교구 이름 표기 방식(따옴표 등)
+· 칭찬과 성장 해석을 쓰는 방식
+· 시작 문장과 끝맺음의 고정 패턴
+· 피해야 할 표현이나 지키는 원칙`;
+  try { S.settings.style = await callClaude(sys, [{ type: 'text', text: user }], 1500); mark('settings'); renderSettings(); toast('말투 가이드를 만들었어요'); }
+  catch (err) { toast(err.message); }
+  b.disabled = false; b.textContent = '🪄 과거 피드백으로 말투 가이드 만들기';
+};
+
+$('#exportBtn').onclick = async () => {
+  await flush();
+  try {
+    const data = { exported_at: new Date().toISOString(), ...(await api('export')) };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    a.download = `피드백노트_백업_${today()}.json`; a.click(); URL.revokeObjectURL(a.href);
+  } catch (e) { toast(e.message); }
+};
+
+/* ═════════════════════════════════════════════════════════
+   예전(브라우저 저장) 데이터 가져오기
+   ═════════════════════════════════════════════════════════ */
+async function importLegacy() {
+  let d; try { d = JSON.parse(localStorage.getItem(LEGACY_KEY)); } catch (e) {}
+  if (!d?.children) return toast('가져올 데이터가 없어요');
+  if (!confirm(`아이 ${d.children.length}명, 과거 피드백 ${(d.library || []).length}개를 Supabase로 옮길까요?`)) return;
+  show('boot');
+  try {
+    await flush();
+    const idMap = {};
+    const base = Math.max(0, ...S.children.map(k => k.sort));
+    const kids = d.children.map((k, i) => { const id = uuid(); idMap[k.id] = id; return { id, name: k.name || '', birth: k.birth || null, gender: k.gender || '', traits: k.traits || '', note: k.note || '', sort: base + i + 1 }; });
+    if (kids.length) await api('insert', { table: 'children', rows: kids });
+
+    const have = new Set(S.materials.map(m => m.name));
+    const mats = (d.materials || []).filter(m => m.name && !have.has(m.name)).map(m => ({ id: uuid(), name: m.name, area: m.area || '', descr: m.desc || '' }));
+    if (mats.length) await api('insert', { table: 'materials', rows: mats });
+
+    const lib = (d.library || []).filter(l => l.text).map(l => ({ id: uuid(), child_id: idMap[l.childId] || null, date: l.date || null, text: l.text }));
+    if (lib.length) await api('insert', { table: 'feedback_library', rows: lib });
+
+    const st = d.settings || {};
+    await api('upsert', { table: 'settings', rows: [{
+      id: 1, teacher: S.settings.teacher || st.teacher || '', max_examples: +(st.maxExamples || S.settings.maxExamples || 4),
+      rules: S.settings.rules || st.rules || '', style: S.settings.style || st.style || '', model: S.settings.model, current_week: S.week.date,
+    }] });
+
+    const w = d.week;
+    if (w?.date && w.entries) {
+      const existing = (await api('week', { date: w.date })).entries;
+      const rows = Object.entries(w.entries).filter(([cid]) => idMap[cid]).map(([cid, e]) => ({
+        id: uuid(), week_date: w.date, child_id: idMap[cid], is_on: e.on !== false,
+        materials: e.materials || [], memo: e.memo || '', words: e.words || '', result: e.result || '', photos: [],
+      }));
+      if (!existing.length) await api('upsert', { table: 'weeks', rows: [{ date: w.date, next: w.next || null, materials: w.materials || [] }] });
+      if (rows.length) await api('insert', { table: 'week_entries', rows });
+    }
+    try { localStorage.setItem(LEGACY_KEY + '-done', '1'); } catch (e) {}
+    await loadAll();
+    $('#legacyBanner').hidden = true;
+    toast('모두 옮겼어요 🌿');
+  } catch (e) { toast('옮기지 못했어요: ' + (e.message || e)); }
+  show('app'); $$('#tabs button')[0].click();
+}
+$('#legacyGo').onclick = importLegacy;
+$('#legacyBtn').onclick = importLegacy;
+$('#legacyLater').onclick = () => { $('#legacyBanner').hidden = true; try { localStorage.setItem(LEGACY_KEY + '-done', '1'); } catch (e) {} };
+</script>
+</body>
+</html>
