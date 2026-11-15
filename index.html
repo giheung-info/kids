@@ -979,9 +979,26 @@ function sortLessons(k) { k.lessons.sort((a, b) => a.d.localeCompare(b.d)); }
 function lessonInfo(k, date) {
   if (!k) return null;
   const i = k.lessons.findIndex(l => l.d === date); if (i < 0) return null;
-  return { d: date, h: k.lessons[i].h, sem: (+k.startSem || 1) + Math.floor(i / PER_SEM), no: i % PER_SEM + 1, off: !!k.lessons[i].mk?.length };
+  return { d: date, h: k.lessons[i].h, sem: (+k.startSem || 1) + Math.floor(i / PER_SEM), no: i % PER_SEM + 1 };
 }
-/* 휴강 → 보강: 휴강한 회차에 mk:[{d,h,m,dur}] 를 달아 둠 (회차 번호는 그대로, 보강 합계 = 1회차 40분) */
+/* 휴강 → 보강
+   휴강한 수업은 일정에서 빠지고(이후 회차 번호가 당겨짐, 끝에 회차를 더하지 않음),
+   보강 시간(합계 40분)은 수업 하나(기준 수업)에 mk:[{d,h,m,dur}] 로 달아 둠.
+   화면 표시: 보강하는 날 회차 "6-8" → "6-8/9 보강" */
+function mkParts(k) {
+  const out = [];
+  k.lessons.forEach(l => (l.mk || []).forEach((p, j) => out.push({ ...p, m: p.m || 0, of: l.d, part: j + 1, total: l.mk.length })));
+  return out;
+}
+const mkTag = (sem, no) => `${sem}-${no}/${no + 1} 보강`;
+const sortMk = a => a.sort((x, y) => (x.d + pad2(x.h) + pad2(x.m || 0)).localeCompare(y.d + pad2(y.h) + pad2(y.m || 0)));
+// 보강 시간을 기준 수업에 붙임: 첫 보강 날의 수업 → 그 뒤 첫 수업 → 그 전 마지막 수업
+function attachMk(k, parts) {
+  if (!parts?.length || !k.lessons.length) return;
+  const d0 = sortMk([...parts])[0].d;
+  const a = k.lessons.find(l => l.d === d0) || k.lessons.find(l => l.d > d0) || k.lessons[k.lessons.length - 1];
+  a.mk = sortMk([...(a.mk || []), ...parts]);
+}
 const LESSON_MIN = 40;
 const ampm = h => (h < 12 ? '오전' : '오후');
 const hm = (h, m) => `${h > 12 ? h - 12 : h}:${pad2(m || 0)}`;
@@ -992,7 +1009,7 @@ function tRange(h, m, dur) {
 const mkLabel = p => `${kDate(p.d)} ${tRange(p.h, p.m, p.dur)} (${p.dur}분)`;
 const nextLesson = (k, date) => k.lessons.find(l => l.d > date) || null;
 const anySched = () => S.children.some(k => k.lessons.length);
-function defaultOn(cid) { if (!anySched()) return true; const i = lessonInfo(kidById(cid), S.week.date); return !!i && !i.off; }
+function defaultOn(cid) { if (!anySched()) return true; const k = kidById(cid); return !!lessonInfo(k, S.week.date) || mkParts(k).some(p => p.d === S.week.date); }
 const isOn = cid => S.week.entries[cid]?.on ?? defaultOn(cid);
 function titleOf(k, date) {
   const i = lessonInfo(k, date);
@@ -1160,11 +1177,16 @@ let calSel = snapSunday(today());
 let calMonth = calSel.slice(0, 7);
 function dayMap() {
   const map = {};
-  S.children.forEach(k => k.lessons.forEach(l => {
-    const info = lessonInfo(k, l.d);
-    (map[l.d] ||= []).push({ k, ...info });
-    (l.mk || []).forEach((p, j) => (map[p.d] ||= []).push({ k, d: p.d, h: p.h, m: p.m || 0, dur: p.dur, mk: true, of: l.d, part: j + 1, total: l.mk.length, sem: info.sem, no: info.no }));
-  }));
+  S.children.forEach(k => {
+    k.lessons.forEach(l => (map[l.d] ||= []).push({ k, ...lessonInfo(k, l.d), mks: [] }));
+    // 보강: 그날 정규 수업이 있으면 그 줄에 붙이고, 없으면 따로 한 줄
+    mkParts(k).forEach(p => {
+      const row = (map[p.d] || []).find(x => x.k === k && !x.mkOnly);
+      if (row) return row.mks.push(p);
+      const prev = [...k.lessons].reverse().find(l => l.d < p.d), pi = prev ? lessonInfo(k, prev.d) : { sem: +k.startSem || 1, no: 0 };
+      (map[p.d] ||= []).push({ k, d: p.d, h: p.h, m: p.m, sem: pi.sem, no: pi.no, mkOnly: true, mks: [p] });
+    });
+  });
   const at = x => (x.h ?? 99) * 60 + (x.m || 0);
   Object.values(map).forEach(a => a.sort((x, y) => at(x) - at(y)));
   return map;
@@ -1182,7 +1204,7 @@ function renderCal() {
     const cls = ['cal-day', dt.getMonth() !== m - 1 && 'out', dt.getDay() === 0 && 'sunday', iso === td && 'today', iso === calSel && 'sel'].filter(Boolean).join(' ');
     h += `<div class="${cls}" data-d="${iso}"><span class="n">${dt.getDate()}</span>` +
       evs.slice(0, 2).map(ev => `<span class="nm evn">${ev.icon || '📌'} ${esc(ev.title)}</span>`).join('') +
-      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); return `<span class="nm" style="background:${bg};color:${fg}${x.off ? ';opacity:.55' : ''}">${x.h != null ? (x.mk ? hm(x.h, x.m) : x.h) + ' ' : ''}${esc(x.k.name)}${x.mk ? ' 보강' : x.off ? ' 휴강' : ''}</span>`; }).join('') +
+      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); const st = x.mks.length ? x.mks[0] : x; return `<span class="nm" style="background:${bg};color:${fg}">${st.h != null ? (x.mks.length ? hm(st.h, st.m) : st.h) + ' ' : ''}${esc(x.k.name)}${x.mks.length ? ' 보강' : ''}</span>`; }).join('') +
       (list.length > cap ? `<span class="more">+${list.length - cap}명</span>` : '') +
       (list.length || evs.length ? `<span class="dots">${evs.length ? '<i class="evd"></i>' : ''}${list.map(x => `<i style="background:${colorOf(S.children.indexOf(x.k))[1]}"></i>`).join('')}</span>` : '') + `</div>`;
   }
@@ -1242,13 +1264,13 @@ function saveEvent() {
 }
 let editing = '';   // 일정 변경 중인 수업 "아이id|날짜"
 let mkRows = null;  // 보강 입력 중인 줄 [{d, t:'09:40', dur}]
+let mkMode = '';    // 'skip' = 이 수업 휴강 + 보강 / 'here' = 이 수업에 보강 시간 달기
 const MK_DURS = [10, 15, 20, 25, 30, 35, 40];
 const mkSum = () => (mkRows || []).reduce((s, r) => s + (+r.dur || 0), 0);
-function mkFromLesson(k, d) {
+function mkFromLesson(k, d, mode) {
   const l = k.lessons.find(x => x.d === d);
-  if (l?.mk?.length) return l.mk.map(p => ({ d: p.d, t: `${pad2(p.h)}:${pad2(p.m || 0)}`, dur: p.dur }));
-  const h = l?.h ?? k.hour;
-  return [{ d: nextLesson(k, d)?.d || '', t: h != null ? `${pad2(h)}:00` : '', dur: LESSON_MIN }];
+  if (mode === 'here' && l?.mk?.length) return l.mk.map(p => ({ d: p.d, t: `${pad2(p.h)}:${pad2(p.m || 0)}`, dur: p.dur }));
+  return [{ d: mode === 'skip' ? (nextLesson(k, d)?.d || '') : d, t: '', dur: LESSON_MIN }];
 }
 function readMk() {
   if (!mkRows) return;
@@ -1256,32 +1278,36 @@ function readMk() {
 }
 function mkSumHtml() { const s = mkSum(); return `합계 <b class="${s === LESSON_MIN ? 'ok' : 'bad'}">${s}분</b> / ${LESSON_MIN}분`; }
 function mkForm(x) {
+  const has = !!x.k.lessons.find(y => y.d === x.d)?.mk?.length;
   return `<div class="ledit mkform">
-    <div class="full mkhead"><b>보강 일정 (${x.sem}-${x.no})</b><span class="mksum">${mkSumHtml()}</span></div>
+    <div class="full mkhead"><b>${mkMode === 'skip' ? `${kDate(x.d)} 휴강 → 보강 시간` : '보강 시간'}</b><span class="mksum">${mkSumHtml()}</span></div>
+    ${mkMode === 'skip' ? `<p class="hint full">이 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요. 보강하는 날은 "6-8/9 보강"처럼 표시돼요.</p>` : ''}
     ${mkRows.map((r, i) => `<div class="mkrow" data-i="${i}">
       <input type="date" data-m="d" value="${r.d}" aria-label="보강 날짜">
       <input type="time" data-m="t" value="${r.t}" step="300" aria-label="보강 시작 시간">
       <select data-m="dur" aria-label="보강 시간">${MK_DURS.map(m => `<option value="${m}" ${+r.dur === m ? 'selected' : ''}>${m}분</option>`).join('')}</select>
       ${mkRows.length > 1 ? `<button class="mkx" data-op="mkdel" title="이 줄 지우기" aria-label="이 줄 지우기">✕</button>` : '<span></span>'}
     </div>`).join('')}
-    <p class="hint full">예) 11/22 오전 9:40 (20분) + 11/29 오전 9:40 (20분) · 또는 11/22 오후 6:00 (40분)</p>
+    <p class="hint full">예) 11/15 오전 9:40 (20분) + 11/22 오전 9:40 (20분) · 또는 11/22 오후 6:00 (40분)</p>
     <div class="ledit-btns">
       <button class="lbtn ghost" data-op="mkadd">＋ 보강 날짜 추가</button>
       <span class="spacer"></span>
-      ${x.off ? `<button class="lbtn ghost" data-op="mkclear">휴강 취소</button>` : `<button class="lbtn ghost" data-op="push" title="보강 없이 이 수업을 빼고 마지막 회차를 한 주 뒤로 미뤄요">보강 없이 미루기</button>`}
+      ${mkMode === 'skip' ? `<button class="lbtn ghost" data-op="push" title="보강 없이 이 수업을 빼고 마지막 회차를 한 주 뒤로 미뤄요">보강 없이 미루기</button>` : has ? `<button class="lbtn ghost" data-op="mkclear">보강 지우기</button>` : ''}
       <button class="lbtn ghost" data-op="cancel">취소</button>
-      <button class="lbtn solid" data-op="mksave">보강 저장</button>
+      <button class="lbtn solid" data-op="mksave">${mkMode === 'skip' ? '휴강 · 보강 저장' : '보강 저장'}</button>
     </div>
   </div>`;
 }
+const mkSub = mks => '보강 ' + mks.map(p => `${tRange(p.h, p.m, p.dur)} (${p.dur}분${p.total > 1 ? ` · ${p.part}/${p.total}` : ''})`).join(', ');
 function lessonRow(x) {
   const [bg, fg] = colorOf(S.children.indexOf(x.k));
   const av = `<div class="avatar sm" style="background:#fff;color:${fg}">${esc((x.k.name || '?').slice(-2))}</div>`;
-  if (x.mk) return `<div class="lesson mk" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" data-of="${x.of}">
+  const tag = t => `<span class="tag" style="background:#fff;color:${fg}">${t}</span>`;
+  if (x.mkOnly) return `<div class="lesson mk" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" data-of="${x.mks[0].of}">
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no} 보강${x.total > 1 ? ` ${x.part}/${x.total}` : ''}</span></div>
-        <div class="sub">${tRange(x.h, x.m, x.dur)} · ${x.dur}분 · ${kDate(x.of)} 휴강분</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(mkTag(x.sem, x.no))}</div>
+        <div class="sub">${mkSub(x.mks)}</div>
       </div>
       <div class="lacts">
         <button class="lbtn" data-op="mkgo">🗓 <span class="lg">보강 </span>변경</button>
@@ -1290,16 +1316,16 @@ function lessonRow(x) {
     </div>
   </div>`;
   const key = `${x.k.id}|${x.d}`, open = editing === key;
-  const l = x.off ? x.k.lessons.find(y => y.d === x.d) : null;
-  return `<div class="lesson ${open ? 'editing' : ''} ${x.off ? 'off' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
+  const own = !!x.k.lessons.find(y => y.d === x.d)?.mk?.length;
+  return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" ${x.mks.length ? `data-of="${x.mks[0].of}"` : ''}>
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no}${x.off ? ' 휴강' : ''}</span></div>
-        <div class="sub">${x.off ? '보강 ' + l.mk.map(mkLabel).join(' · ') : `${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}`}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(x.mks.length ? mkTag(x.sem, x.no) : `${x.sem}-${x.no}`)}</div>
+        <div class="sub">${x.mks.length ? mkSub(x.mks) + ' · ' : ''}${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
-        <button class="lbtn" data-op="edit">🗓 <span class="lg">${x.off ? '보강 ' : '일정 '}</span>변경</button>
-        ${x.off ? '' : '<button class="lbtn" data-op="fb">✏️ 피드백</button>'}
+        <button class="lbtn" data-op="edit">🗓 <span class="lg">일정 </span>변경</button>
+        <button class="lbtn" data-op="fb">✏️ 피드백</button>
       </div>
     </div>
     <button class="lx" data-op="del" title="이 수업 지우기" aria-label="이 수업 지우기">✕</button>
@@ -1308,6 +1334,7 @@ function lessonRow(x) {
       <label>시간<select data-e="hour">${hourOptions(x.h)}</select></label>
       <div class="ledit-btns">
         <button class="lbtn ghost" data-op="mkopen" title="이 수업을 휴강하고 보강 날짜·시간을 정해요">휴강 처리</button>
+        <button class="lbtn ghost" data-op="mkhere" title="이 수업 날에 하는 보강 시간을 적어요">${own ? '보강 변경' : '＋ 보강'}</button>
         <span class="spacer"></span>
         <button class="lbtn ghost" data-op="cancel">취소</button>
         <button class="lbtn solid" data-op="apply">변경하기</button>
@@ -1358,18 +1385,19 @@ $('#dayPanel').addEventListener('click', async e => {
   const k = kidById(row.dataset.cid); const d = row.dataset.d;
   if (b.dataset.op === 'fb') return openRecord(d, k.id);
   if (b.dataset.op === 'edit') {
-    editing = editing === `${k.id}|${d}` ? '' : `${k.id}|${d}`;
-    mkRows = editing && k.lessons.find(x => x.d === d)?.mk?.length ? mkFromLesson(k, d) : null;
+    editing = editing === `${k.id}|${d}` ? '' : `${k.id}|${d}`; mkRows = null;
     return renderDay();
   }
   if (b.dataset.op === 'cancel') { editing = ''; mkRows = null; return renderDay(); }
-  if (b.dataset.op === 'mkgo') {   // 보강 줄에서 → 휴강한 날로 가서 보강 일정 고치기
+  if (b.dataset.op === 'mkgo') {   // 보강만 있는 날 → 보강이 달린 수업으로 가서 고치기
     const of = row.dataset.of; calSel = of; calMonth = of.slice(0, 7);
-    editing = `${k.id}|${of}`; mkRows = mkFromLesson(k, of); evForm = false; renderCal();
+    editing = `${k.id}|${of}`; mkMode = 'here'; mkRows = mkFromLesson(k, of, 'here'); evForm = false; renderCal();
     setTimeout(() => $('#dayPanel .mkform')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     return;
   }
-  if (b.dataset.op === 'mkopen') { mkRows = mkFromLesson(k, d); return renderDay(); }
+  if (b.dataset.op === 'mkopen' || b.dataset.op === 'mkhere') {
+    mkMode = b.dataset.op === 'mkopen' ? 'skip' : 'here'; mkRows = mkFromLesson(k, d, mkMode); return renderDay();
+  }
   if (b.dataset.op === 'mkadd') {
     readMk(); const left = LESSON_MIN - mkSum(), last = mkRows[mkRows.length - 1] || {};
     if (mkRows.length === 1 && left <= 0) mkRows[0].dur = LESSON_MIN / 2;   // 40분 한 줄이면 20 + 20 으로 나눔
@@ -1382,16 +1410,25 @@ $('#dayPanel').addEventListener('click', async e => {
     if (mkRows.some(r => !r.d || !r.t)) return toast('보강 날짜와 시간을 모두 적어 주세요');
     const sum = mkSum();
     if (sum !== LESSON_MIN) return toast(`보강 합계가 ${sum}분이에요. ${LESSON_MIN}분을 채워 주세요`);
-    l.mk = mkRows.map(r => { const [hh, mm] = r.t.split(':').map(Number); return { d: r.d, h: hh, m: mm, dur: +r.dur }; })
-      .sort((a, b) => (a.d + pad2(a.h) + pad2(a.m)).localeCompare(b.d + pad2(b.h) + pad2(b.m)));
+    const parts = mkRows.map(r => { const [hh, mm] = r.t.split(':').map(Number); return { d: r.d, h: hh, m: mm, dur: +r.dur }; });
+    if (mkMode === 'skip') {
+      if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고 보강으로 채울까요?\n이 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요.`)) return;
+      k.lessons = k.lessons.filter(x => x !== l);
+      if (!k.lessons.length) { k.lessons.push(l); return toast('남은 수업이 없어 휴강 처리를 할 수 없어요'); }
+      if (l.mk?.length) attachMk(k, l.mk);
+      attachMk(k, parts);
+      toast(`${k.name} ${kDate(d)} 휴강 · 보강 ${parts.length}번 저장했어요`);
+    } else {
+      l.mk = sortMk(parts);
+      toast(`${k.name} 보강 ${parts.length}번 저장했어요`);
+    }
     editing = ''; mkRows = null; calChanged(k);
-    toast(`${k.name} ${kDate(d)} 휴강 · 보강 ${l.mk.length}번 저장했어요`);
     return;
   }
   if (b.dataset.op === 'mkclear') {
-    if (!confirm(`${k.name} ${kDate(d)} 휴강을 취소하고 보강 일정을 지울까요?`)) return;
+    if (!confirm(`${k.name} 보강 일정을 지울까요?`)) return;
     const l = k.lessons.find(x => x.d === d); if (l) delete l.mk;
-    editing = ''; mkRows = null; calChanged(k); toast('휴강을 취소했어요');
+    editing = ''; mkRows = null; calChanged(k); toast('보강을 지웠어요');
     return;
   }
   if (b.dataset.op === 'apply') {
@@ -1407,14 +1444,15 @@ $('#dayPanel').addEventListener('click', async e => {
   if (b.dataset.op === 'push') {
     editing = ''; mkRows = null;
     if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고, 이후 회차를 한 주씩 뒤로 미룰까요?`)) return renderDay();
-    const h = k.lessons.find(x => x.d === d).h;
-    k.lessons = k.lessons.filter(x => x.d !== d);
+    const gone = k.lessons.find(x => x.d === d), h = gone.h;
+    k.lessons = k.lessons.filter(x => x.d !== d); attachMk(k, gone.mk);
     let nd = addDays((k.lessons[k.lessons.length - 1] || { d })['d'], 7); while (k.lessons.some(x => x.d === nd)) nd = addDays(nd, 7);
     k.lessons.push({ d: nd, h: k.hour ?? h }); calChanged(k); toast(`마지막 회차가 ${kDate(nd)}로 밀렸어요`);
   }
   if (b.dataset.op === 'del') {
     if (!delOk(`${k.name} ${kDate(d)} 수업을 지울까요?\n이후 회차 번호가 하나씩 앞당겨져요.`)) return;
-    k.lessons = k.lessons.filter(x => x.d !== d); calChanged(k);
+    const gone = k.lessons.find(x => x.d === d);
+    k.lessons = k.lessons.filter(x => x.d !== d); attachMk(k, gone?.mk); calChanged(k);
   }
 });
 async function openRecord(date, cid) {
