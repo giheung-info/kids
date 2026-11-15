@@ -312,6 +312,44 @@
   .lgst.done{background:#dcf5ec;color:#2f8f74}
   .lgst.today{background:#fff1c7;color:#9a7413}
   .logdel{font-size:12px;padding:5px 8px}
+  /* 교구 게시판 */
+  .bd-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .bd-bar .seg{overflow-x:auto;max-width:100%}
+  .bd-bar .seg button{white-space:nowrap}
+  .bd-bar .seg small{font-size:11px;opacity:.65;margin-left:3px;font-weight:600}
+  #bdSearch{flex:1 1 180px;width:auto;padding:9px 13px}
+  .bd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  @media (max-width:520px){.bd-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+  .bd-card{padding:0;overflow:hidden;cursor:pointer;text-align:left;border:1px solid var(--line);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}
+  .bd-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+  .bd-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#f4f1f8}
+  .bd-card .bd-cap{padding:10px 12px 12px}
+  .bd-card .bd-cap b{display:block;font-size:14.5px;line-height:1.35;word-break:keep-all}
+  .bd-card .bd-cap .hint{font-size:12px;margin-top:3px}
+  .bd-area{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;margin-bottom:4px}
+  .bd-a0{background:var(--pink);color:var(--pink-ink)} .bd-a1{background:var(--mint);color:var(--mint-ink)} .bd-a2{background:var(--sky);color:var(--sky-ink)}
+  .bd-a3{background:var(--butter);color:var(--butter-ink)} .bd-a4{background:var(--peach);color:var(--peach-ink)} .bd-a5{background:var(--accent-soft);color:var(--accent)}
+  .bd-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .bd-head h2{margin:0}
+  .bd-desc{margin-bottom:14px;font-size:14px;color:var(--sub)}
+  .bd-desc b{color:var(--ink)}
+  .bd-group+.bd-group{margin-top:12px}
+  .bd-group h3{font-size:15px;margin:0 0 10px;display:flex;gap:8px;align-items:center}
+  .bd-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+  @media (max-width:520px){.bd-photos{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}}
+  .bd-photos button{border:0;padding:0;background:#f4f1f8;border-radius:12px;overflow:hidden;cursor:zoom-in;position:relative}
+  .bd-photos img{display:block;width:100%;aspect-ratio:1;object-fit:cover;transition:transform .2s}
+  .bd-photos button:hover img{transform:scale(1.04)}
+  .bd-photos button span{position:absolute;left:6px;top:6px;font-size:11px;font-weight:800;background:rgba(0,0,0,.45);color:#fff;border-radius:999px;padding:0 7px}
+  .bd-lb{position:fixed;inset:0;z-index:60;background:rgba(20,16,36,.92);display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+  .bd-lb img{max-width:calc(100vw - 32px);max-height:calc(100vh - 120px);border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.4);user-select:none}
+  .bd-lb .lb-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:14px 16px;color:#fff;font-size:14px}
+  .bd-lb .lb-top b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bd-lb button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:999px;cursor:pointer;font-size:20px;width:44px;height:44px;display:grid;place-items:center}
+  .bd-lb button:hover{background:rgba(255,255,255,.26)}
+  .bd-lb .lb-prev,.bd-lb .lb-next{position:absolute;top:50%;transform:translateY(-50%)}
+  .bd-lb .lb-prev{left:12px} .bd-lb .lb-next{right:12px}
+  @media (max-width:640px){.bd-lb .lb-prev,.bd-lb .lb-next{top:auto;bottom:16px;transform:none}}
   /* 추천교구 */
   .reccard+.reccard{margin-top:10px}
   .rechead{display:flex;align-items:center;gap:10px}
@@ -509,7 +547,8 @@
       <button data-tab="week"><i>✏️</i><span>수업 기록</span></button>
       <button data-tab="kids"><i>🧒</i><span>아이 프로필</span></button>
       <button data-tab="lib" hidden><i>📚</i><span>과거 피드백</span></button><!-- 메뉴에서만 숨김: 과거 피드백 데이터는 AI 말투 학습·이름별 기록에 계속 쓰임 -->
-      <button data-tab="mat"><i>🧩</i><span>교구 사전</span></button>
+      <button data-tab="mat" hidden><i>🧩</i><span>교구 사전</span></button><!-- 메뉴에서만 숨김: 교구 게시판으로 대체. 예전에 적은 교구 설명은 피드백·추천에 계속 쓰임 -->
+      <button data-tab="board"><i>📸</i><span>교구 게시판</span></button>
       <button data-tab="set"><i>⚙️</i><span>설정</span></button>
     </nav>
     </div>
@@ -605,6 +644,19 @@
     <div class="list" id="matList"></div>
   </section>
 
+  <!-- 교구 게시판 (사진: 교구사진 폴더 · 목록: 교구사진/board.js) -->
+  <section class="tab" id="tab-board">
+    <div id="bdList">
+      <div style="margin-bottom:14px"><h2>교구 게시판</h2><p class="hint">영역별 교구 제시 사진이에요. 교구를 누르면 단계별 사진을 크게 볼 수 있어요.</p></div>
+      <div class="bd-bar">
+        <div class="seg" id="bdAreas"></div>
+        <input type="text" id="bdSearch" placeholder="🔍 교구 찾기" autocomplete="off">
+      </div>
+      <div class="bd-grid" id="bdGrid"></div>
+    </div>
+    <div id="bdDetail" hidden></div>
+  </section>
+
   <!-- 설정 -->
   <section class="tab" id="tab-set">
     <!-- 기본 정보 · 말투 가이드: 화면에서만 숨김 (값은 그대로 피드백 작성에 쓰임). 다시 보이려면 hidden 지우기 -->
@@ -651,6 +703,7 @@
 <datalist id="matNames"></datalist>
 <div class="toast" id="toast"></div>
 
+<script src="교구사진/board.js"></script>
 <script>
 /* ═════════════════════════════════════════════════════════
    ① 여기만 채우세요 (Edge Function 주소)
@@ -1177,8 +1230,118 @@ function showTab(tab) {
   $$('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
   $$('section.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + tab));
   if (tab === 'week') recAll = null;
-  ({ cal: () => (calView === 'log' ? renderAbsLog() : renderCal()), week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[tab]();
+  ({ cal: () => (calView === 'log' ? renderAbsLog() : renderCal()), week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, board: renderBoard, set: renderSettings })[tab]();
 }
+
+/* ── 교구 게시판: 교구사진/board.js 의 목록으로 사진을 보여 줌 ── */
+const BD = Array.isArray(window.BOARD_DATA) ? window.BOARD_DATA : [];
+let bdArea = -1, bdOpen = null, bdLb = null;
+const bdUrl = (kind, ai, p, f) => ['교구사진', kind, BD[ai].key, ...p.split('/'), f].map(encodeURIComponent).join('/');
+const bdCover = (ai, it) => bdUrl('thumb', ai, it.g[0].p, it.g[0].f[0]);
+const bdNorm = s => String(s || '').replace(/[\s·,.\-()_]/g, '').toLowerCase();
+/* 게시판 교구 165개 = 제시교구 검색 · 피드백 · 추천교구의 기준 목록 */
+const BD_ITEMS = BD.flatMap((a, ai) => a.items.map((it, ii) => ({ ai, ii, name: it.name, label: a.label,
+  area: a.label.startsWith('일상') ? '일상' : a.label === '수학' ? '수' : a.label, n: it.n,
+  steps: [...new Set(it.g.map(g => g.t).filter(Boolean))] })));
+const bdLike = (a, b) => a.length >= 3 && b.length >= 3 && (a.includes(b) || b.includes(a));
+function boardByName(n) {
+  const k = bdNorm(n); if (!k) return null;
+  return BD_ITEMS.find(b => bdNorm(b.name) === k) || BD_ITEMS.find(b => bdLike(bdNorm(b.name), k)) || null;
+}
+// 예전 교구 사전에 적어 둔 설명이 있으면 같이 씀 (사전 화면은 숨김, 설명만 활용)
+function dictDesc(name) {
+  const k = bdNorm(name), ms = S?.materials || [];
+  return (ms.find(m => bdNorm(m.name) === k) || ms.find(m => bdLike(bdNorm(m.name), k)))?.desc || '';
+}
+// 피드백·추천에 넣을 교구 한 줄: 이름 (영역) · 게시판 제시 단계 · 설명
+function matLine(n, short) {
+  const b = boardByName(n), name = b?.name || n, d = dictDesc(name) || dictDesc(n);
+  const steps = b?.steps.length ? b.steps.slice(0, short ? 6 : 20).join(' → ') : '';
+  if (!b && !d) return `- ${n}`;
+  return `- ${name}${b ? ` (${b.area})` : ''}${steps ? ` · 제시 단계: ${steps}` : ''}${d ? ` · 설명: ${short ? d.slice(0, 40) : d}` : ''}`;
+}
+function openBoard(name) {
+  const b = boardByName(name); if (!b) return toast('교구 게시판에서 찾지 못했어요');
+  bdOpen = { ai: b.ai, ii: b.ii }; showTab('board'); window.scrollTo(0, 0); pushNav();
+}
+function renderBoard() {
+  if (bdOpen) return drawBoardDetail();
+  $('#bdList').hidden = false; $('#bdDetail').hidden = true;
+  if (!BD.length) { $('#bdAreas').innerHTML = ''; $('#bdGrid').innerHTML = `<div class="card empty" style="grid-column:1/-1"><span class="big">📸</span>사진 목록을 찾지 못했어요<br><span class="hint">index.html 옆에 ‘교구사진’ 폴더(board.js 포함)가 있어야 해요</span></div>`; return; }
+  const total = BD.reduce((s, a) => s + a.items.length, 0);
+  $('#bdAreas').innerHTML = `<button data-a="-1" class="${bdArea < 0 ? 'on' : ''}">전체<small>${total}</small></button>` +
+    BD.map((a, i) => `<button data-a="${i}" class="${bdArea === i ? 'on' : ''}">${esc(a.label)}<small>${a.items.length}</small></button>`).join('');
+  drawBoardGrid();
+}
+function drawBoardGrid() {
+  const q = bdNorm($('#bdSearch').value);
+  const cards = [];
+  BD.forEach((a, ai) => {
+    if (bdArea >= 0 && bdArea !== ai) return;
+    a.items.forEach((it, ii) => {
+      if (q && !bdNorm(it.name).includes(q) && !it.g.some(g => bdNorm(g.t).includes(q))) return;
+      const steps = it.g.filter(g => g.t).length;
+      cards.push(`<button class="card bd-card" data-ai="${ai}" data-ii="${ii}">
+        <img loading="lazy" src="${bdCover(ai, it)}" alt="">
+        <div class="bd-cap"><span class="bd-area bd-a${ai}">${esc(a.label)}</span><b>${it.no < 9999 ? it.no + '. ' : ''}${esc(it.name)}</b>
+        <div class="hint">사진 ${it.n}장${steps ? ` · 단계 ${steps}` : ''}</div></div></button>`);
+    });
+  });
+  $('#bdGrid').innerHTML = cards.join('') || `<div class="card empty" style="grid-column:1/-1">찾는 교구가 없어요</div>`;
+}
+function drawBoardDetail() {
+  const { ai, ii } = bdOpen, a = BD[ai], it = a?.items[ii];
+  if (!it) { bdOpen = null; return renderBoard(); }
+  $('#bdList').hidden = true; $('#bdDetail').hidden = false;
+  const key = bdNorm(it.name);
+  const mat = (S?.materials || []).find(m => { const n = bdNorm(m.name); return n && (n === key || key.includes(n) || n.includes(key)); });
+  let k = 0;
+  $('#bdDetail').innerHTML = `<div class="bd-head"><button class="btn sm" data-bd="back">‹ 목록</button>
+      <span class="bd-area bd-a${ai}" style="margin:0">${esc(a.label)}</span><h2>${it.no < 9999 ? it.no + '. ' : ''}${esc(it.name)}</h2><span class="hint">사진 ${it.n}장</span></div>
+    ${mat?.desc ? `<div class="card pad bd-desc">🧩 <b>교구 사전 · ${esc(mat.name)}</b><br>${esc(mat.desc)}</div>` : ''}
+    ${it.g.map((g, gi) => `<div class="card pad bd-group"><h3>${g.t ? `📌 ${esc(g.t)}` : '📷 기본 사진'}<span class="hint">${g.f.length}장</span></h3>
+      <div class="bd-photos">${g.f.map((f, fi) => `<button data-g="${gi}" data-f="${fi}" aria-label="사진 크게 보기"><img loading="lazy" src="${bdUrl('thumb', ai, g.p, f)}" alt=""><span>${++k}</span></button>`).join('')}</div></div>`).join('')}`;
+}
+function bdFlat() { const { ai, ii } = bdOpen, it = BD[ai].items[ii]; return it.g.flatMap((g, gi) => g.f.map((f, fi) => ({ gi, fi, t: g.t, src: bdUrl('photo', ai, g.p, f) }))); }
+function openBdLb(idx) {
+  const list = bdFlat();
+  if (!bdLb) {
+    bdLb = document.createElement('div'); bdLb.className = 'bd-lb';
+    bdLb.innerHTML = `<div class="lb-top"><b></b><span class="lb-n"></span><button class="lb-x" aria-label="닫기">✕</button></div><img alt=""><button class="lb-prev" aria-label="이전 사진">‹</button><button class="lb-next" aria-label="다음 사진">›</button>`;
+    bdLb.addEventListener('click', e => {
+      if (e.target.closest('.lb-x') || e.target === bdLb) return closeBdLb();
+      if (e.target.closest('.lb-prev')) return stepBdLb(-1);
+      if (e.target.closest('.lb-next')) return stepBdLb(1);
+    });
+    let sx = null;
+    bdLb.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    bdLb.addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 50) stepBdLb(dx < 0 ? 1 : -1); });
+    document.body.appendChild(bdLb);
+  }
+  bdLb.hidden = false; bdLb.dataset.i = idx; bdLb._list = list; showBdLb();
+}
+function showBdLb() {
+  const list = bdLb._list, i = +bdLb.dataset.i, p = list[i], it = BD[bdOpen.ai].items[bdOpen.ii];
+  bdLb.querySelector('img').src = p.src;
+  bdLb.querySelector('b').textContent = it.name + (p.t ? ' · ' + p.t : '');
+  bdLb.querySelector('.lb-n').textContent = `${i + 1} / ${list.length}`;
+  [list[i + 1], list[i - 1]].forEach(n => { if (n) new Image().src = n.src; });
+}
+function stepBdLb(d) { const n = bdLb._list.length; bdLb.dataset.i = (+bdLb.dataset.i + d + n) % n; showBdLb(); }
+function closeBdLb() { if (bdLb) bdLb.hidden = true; }
+document.addEventListener('keydown', e => {
+  if (!bdLb || bdLb.hidden) return;
+  if (e.key === 'Escape') closeBdLb(); else if (e.key === 'ArrowRight') stepBdLb(1); else if (e.key === 'ArrowLeft') stepBdLb(-1);
+});
+$('#bdAreas').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; bdArea = +b.dataset.a; renderBoard(); });
+$('#bdSearch').addEventListener('input', drawBoardGrid);
+$('#bdGrid').addEventListener('click', e => { const b = e.target.closest('.bd-card'); if (!b) return; bdOpen = { ai: +b.dataset.ai, ii: +b.dataset.ii }; drawBoardDetail(); window.scrollTo(0, 0); });
+$('#bdDetail').addEventListener('click', e => {
+  if (e.target.closest('[data-bd=back]')) { bdOpen = null; renderBoard(); return; }
+  const b = e.target.closest('.bd-photos button'); if (!b) return;
+  const list = bdFlat(), gi = +b.dataset.g, fi = +b.dataset.f;
+  openBdLb(list.findIndex(x => x.gi === gi && x.fi === fi));
+});
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   showTab(b.dataset.tab); window.scrollTo(0, 0); pushNav();
@@ -1231,7 +1394,7 @@ function chipInput(box, list, onChange) {
       if (e.key === 'Enter') { e.preventDefault(); add(); }
       if (e.key === 'Backspace' && !inp.value && list.length) { list.pop(); onChange(); draw(); box.querySelector('input').focus(); }
     });
-    inp.addEventListener('change', () => { if (S.materials.some(m => m.name === inp.value)) add(); });
+    inp.addEventListener('change', () => { if (BD_ITEMS.some(b => b.name === inp.value) || S.materials.some(m => m.name === inp.value)) add(); });
     inp.addEventListener('blur', () => { if (inp.value.trim()) add(); });
   };
   box.onclick = e => {
@@ -1241,7 +1404,11 @@ function chipInput(box, list, onChange) {
   };
   draw();
 }
-function refreshDatalist() { $('#matNames').innerHTML = S.materials.map(m => `<option value="${esc(m.name)}">`).join(''); }
+function refreshDatalist() {
+  $('#matNames').innerHTML = BD_ITEMS.length
+    ? BD_ITEMS.map(b => `<option value="${esc(b.name)}" label="${esc(b.label)} · 사진 ${b.n}장">`).join('')
+    : S.materials.map(m => `<option value="${esc(m.name)}">`).join('');
+}
 
 /* ═════════════════════════════════════════════════════════
    수업 기록
@@ -1727,7 +1894,7 @@ function recHistory(k) {
 }
 function recentMats(k, target) {
   const from = addDays(target, -REC_DAYS), set = new Set();
-  recHistory(k).filter(h => h.d >= from && h.d < target).forEach(h => h.mats.forEach(n => set.add(matByName(n)?.name || n)));
+  recHistory(k).filter(h => h.d >= from && h.d < target).forEach(h => h.mats.forEach(n => set.add(boardByName(n)?.name || matByName(n)?.name || n)));
   return [...set];
 }
 async function recommend(cid) {
@@ -1736,12 +1903,14 @@ async function recommend(cid) {
   recBusy[cid] = true; renderRecs();
   try {
     const li = lessonInfo(k, nx.d), recent = recentMats(k, nx.d), hist = recHistory(k).slice(0, 6), mon = ageMonths(k.birth);
-    const matList = S.materials.filter(m => m.name).map(m => `- ${m.name} (${m.area || '영역 없음'})${recent.includes(m.name) ? ' [최근 한 달 안에 함]' : ''}: ${(m.desc || '').slice(0, 40)}`).join('\n');
+    const matList = BD_ITEMS.length
+      ? BD_ITEMS.map(b => matLine(b.name, true).replace(`- ${b.name}`, `- ${b.name}${recent.includes(b.name) ? ' [최근 한 달 안에 함]' : ''}`)).join('\n')
+      : S.materials.filter(m => m.name).map(m => `- ${m.name} (${m.area || '영역 없음'})${recent.includes(m.name) ? ' [최근 한 달 안에 함]' : ''}: ${(m.desc || '').slice(0, 40)}`).join('\n');
     const histText = hist.length ? hist.map(h => `[${kDate(h.d)}] 교구: ${h.mats.join(', ') || '-'}\n메모: ${(h.memo || '-').slice(0, 300)}${h.words ? `\n아이 말: ${h.words.slice(0, 150)}` : ''}${h.text ? `\n피드백: ${h.text.slice(0, 450)}` : ''}`).join('\n\n') : '(아직 기록 없음)';
     const system = `당신은 경력 많은 몬테소리 선생님입니다. 아이의 다음 수업에 제시할 교구를 정확히 ${REC_N}개 고릅니다.
 [고르는 기준]
 1. 최근 한 달 안에 한 교구([최근 한 달 안에 함] 표시)는 빼고 고릅니다.
-2. 아이의 나이(개월 수)와 지금까지 한 진도에 맞는 교구를 고릅니다. 이미 익힌 교구의 다음 단계, 선행 교구를 마친 교구를 우선합니다.
+2. 아이의 나이(개월 수)와 지금까지 한 진도에 맞는 교구를 고릅니다. 이미 익힌 교구의 다음 단계, 선행 교구를 마친 교구를 우선합니다. 교구 목록은 영역별 진행 순서대로 되어 있고, "제시 단계"는 그 교구를 몇 차에 걸쳐 제시하는지 보여 줍니다. 이전에 한 교구의 다음 차시가 남았다면 "이어서"로 추천해도 됩니다.
 3. 단, 지난 메모·피드백에서 끝까지 마치지 못했거나 "다음에 이어서" 하기로 한 교구가 있으면 한 달 안에 했어도 "이어서"로 먼저 넣습니다.
 4. 영역(일상·감각·언어·수·문화)이 한쪽으로 몰리지 않게 합니다.
 5. 반드시 <교구 목록>에 있는 이름을 글자 그대로 씁니다.
@@ -1767,7 +1936,7 @@ ${matList}
     try { out = await callClaude(system, [{ type: 'text', text }], 4000); }
     catch (e) { if (!/빈 응답/.test(e.message)) throw e; out = await callClaude(system + '\n짧게 생각하고 바로 JSON만 출력합니다.', [{ type: 'text', text }], 4000); }
     const js = JSON.parse((out.match(/\{[\s\S]*\}/) || ['{}'])[0]);
-    const items = (js.items || []).map(it => ({ name: matByName(String(it.name || ''))?.name || String(it.name || ''), kind: String(it.kind || ''), why: String(it.why || '') })).filter(it => it.name).slice(0, REC_N);
+    const items = (js.items || []).map(it => ({ name: boardByName(String(it.name || ''))?.name || matByName(String(it.name || ''))?.name || String(it.name || ''), kind: String(it.kind || ''), why: String(it.why || '') })).filter(it => it.name).slice(0, REC_N);
     if (!items.length) throw new Error('추천 결과를 읽지 못했어요. 다시 눌러 주세요');
     recCache[cid] = { for: nx.d, at: new Date().toISOString(), items }; saveRecCache();
   } catch (e) { toast(`${k.name}: ${e.message}`); }
@@ -1795,8 +1964,8 @@ async function renderRecs() {
           <button class="btn sm" data-r="go" ${recBusy[k.id] ? 'disabled' : ''}>${recBusy[k.id] ? '고르는 중…' : fresh ? '↻ 다시 추천' : '✨ 추천 받기'}</button>
         </span>
       </div>
-      ${fresh ? `<ol class="reclist">${rc.items.map(it => { const m = matByName(it.name); return `<li>
-        <div><b>${esc(it.name)}</b>${m?.area ? ` <span class="tag">${esc(m.area)}</span>` : ''}${it.kind ? ` <span class="tag ${it.kind.includes('이어') ? 'sem' : 'time'}">${esc(it.kind)}</span>` : ''}</div>
+      ${fresh ? `<ol class="reclist">${rc.items.map(it => { const b = boardByName(it.name), m = b ? { area: b.label } : matByName(it.name); return `<li>
+        <div><b>${esc(it.name)}</b>${m?.area ? ` <span class="tag">${esc(m.area)}</span>` : ''}${b ? ` <button class="btn ghost sm" data-r="board" data-n="${esc(b.name)}" style="padding:1px 8px;font-size:12px">📸 사진 ${b.n}</button>` : ''}${it.kind ? ` <span class="tag ${it.kind.includes('이어') ? 'sem' : 'time'}">${esc(it.kind)}</span>` : ''}</div>
         <div class="hint">${esc(it.why)}</div></li>`; }).join('')}</ol>` : rc ? `<p class="hint">지난 추천(${kDate(rc.for)} 수업용)은 지난 일정이에요. 다시 추천 받아 주세요.</p>` : ''}
       <p class="hint recrecent">최근 한 달 한 교구: ${recent.length ? recent.map(esc).join(', ') : '없음'}</p>
     </div>`;
@@ -1808,6 +1977,7 @@ async function renderRecs() {
 }
 $('#recRecView').addEventListener('click', async e => {
   const b = e.target.closest('[data-r]'); if (!b) return;
+  if (b.dataset.r === 'board') return openBoard(b.dataset.n);
   if (b.dataset.r === 'all') {
     const ids = [...$$('#recRecView .reccard')].map(c => c.dataset.id);
     for (const id of ids) await recommend(id);
@@ -2110,7 +2280,7 @@ function systemPrompt() {
 3. 메모에 적힌 아이의 말은 표현을 살려 큰따옴표로 옮깁니다.
 4. 사진은 눈에 보이는 것(손 모양, 교구 배열, 자세, 집중하는 모습)만 활용하고 감정이나 상황을 추측하지 않습니다.
 5. 다른 아이와 비교하지 않습니다.
-6. 교구 설명이 주어지면 그 교구의 실제 사용 방법과 의미에 맞게 씁니다.
+6. 교구 설명이 주어지면 그 교구의 실제 사용 방법과 의미에 맞게 씁니다. "제시 단계"(교구 게시판의 1차제시·2차제시·변형 등)는 그 교구가 어떤 순서로 넓혀지는지 보여 주는 참고 정보이니, 메모에 나온 단계에 맞춰 쓰고 하지 않은 단계를 했다고 쓰지 않습니다.
 7. 결과는 학부모님께 보낼 피드백 본문만 출력합니다. 머리말, 설명, 마크다운 기호(#, **, -)는 쓰지 않습니다.
 
 [기본 형식] (과거 피드백 형식이 다르면 과거 피드백을 따릅니다)
@@ -2127,7 +2297,7 @@ function buildPrompt(cid) {
   const k = kidById(cid); const en = entryOf(cid);
   const li = lessonInfo(k, S.week.date); const nx = nextLesson(k, S.week.date)?.d || S.week.next;
   const mats = en.materials.length ? en.materials : S.week.materials;
-  const matInfo = mats.map(n => { const m = matByName(n); return m ? `- ${m.name} (${m.area}): ${m.desc}` : `- ${n}`; }).join('\n');
+  const matInfo = mats.map(n => matLine(n, false)).join('\n');
   const ex = pickExamples(cid);
   const exText = ex.length
     ? ex.map((l, i) => `<예시 ${i + 1}${kidById(l.childId) ? ` · ${kidById(l.childId).name}` : ''}>\n${l.text.slice(0, 3000)}\n</예시 ${i + 1}>`).join('\n\n')
@@ -2520,7 +2690,7 @@ $('#importPick').onchange = async e => {
   } catch (err) { toast('가져오지 못했어요: ' + (err.message || err)); }
   show('app');
   const tab = $('#tabs button.on')?.dataset.tab || 'cal';
-  ({ cal: renderCal, week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[tab]();
+  ({ cal: renderCal, week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, board: renderBoard, set: renderSettings })[tab]();
 };
 
 $('#exportBtn').onclick = async () => {
