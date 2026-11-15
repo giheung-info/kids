@@ -281,6 +281,15 @@
   .evadd:hover{background:#fff1c2;color:#6e4f08;border-color:#e9c95a}
   .evform{margin-top:10px;background:#fffaf0;border:1px solid #f3e2ae}
   .evform .full{grid-column:1/-1}
+  /* 휴강 · 보강 */
+  .lesson.off{opacity:.6}
+  .mkform .full{grid-column:1/-1}
+  .mkhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+  .mkhead .bad{color:var(--danger)} .mkhead .ok{color:#2f8f74}
+  .mkrow{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 92px 30px;gap:6px;align-items:center}
+  .mkrow .mkx{border:0;background:transparent;color:inherit;cursor:pointer;font-size:13px;opacity:.5}
+  .mkrow .mkx:hover{opacity:1;color:var(--danger)}
+  @media (max-width:520px){.mkrow{grid-template-columns:1fr 1fr}.mkrow .mkx{justify-self:end}}
   .evtypes{display:flex;gap:6px;flex-wrap:wrap}
   .evt{border:1.5px solid #f0d58a;background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;color:#8a6410;cursor:pointer}
   .evt.on{background:#ffd76a;border-color:#e9b93a;color:#5e4206}
@@ -645,6 +654,165 @@ const DEFAULT_MATERIALS = [
   ['집게 옮기기','일상','집게로 물건을 집어 옮기며 집게 잡기와 손의 힘 조절을 익힌다.'],
   ['단추 끼우기 틀','일상','옷 입기 틀로 단추를 끼우고 빼며 스스로 옷 입는 독립심과 소근육을 기른다.'],
   ['매트 펴고 말기','일상','작업 공간을 스스로 준비하고 정리하며 질서감과 작업의 시작·끝을 익힌다.'],
+
+  /* ── 일상생활 영역: 기초 동작 ── */
+  ['의자 옮기기','일상','의자 등받이를 양손으로 잡고 소리 나지 않게 들어 옮기고 넣는다. 몸의 조절과 주변을 배려하는 움직임을 익힌다.'],
+  ['쟁반 나르기','일상','교구가 담긴 쟁반을 양손으로 수평을 유지하며 교구장에서 책상까지 나른다. 균형감과 조심스러운 움직임, 독립적인 작업 준비를 기른다.'],
+  ['문 여닫기','일상','손잡이를 돌려 문을 조용히 열고 닫는다. 소리를 조절하는 몸의 움직임과 공동생활의 예절을 익힌다.'],
+  ['선 위 걷기','일상','바닥의 타원 선 위를 발뒤꿈치와 발끝을 붙여 걷는다. 숟가락·종 등을 들고 걸으며 균형감, 몸의 조절, 집중력을 기른다.'],
+  ['침묵 게임','일상','모두 함께 움직임을 멈추고 조용히 주변 소리에 귀 기울이다가 속삭이는 이름을 듣고 온다. 자기 조절과 내적 집중을 경험한다.'],
+  ['인사와 예절','일상','인사하기, 부탁하기, 고맙다·미안하다 말하기, 기다리기, 방해하지 않고 부르기 등을 역할놀이로 연습하며 사회적 관계의 기술을 익힌다.'],
+  /* ── 일상생활 영역: 손 조절 (옮기기·따르기) ── */
+  ['스펀지 짜기','일상','스펀지로 물을 흡수해 다른 그릇에 짜서 옮긴다. 손 전체의 힘과 쥐었다 펴는 조절력을 기르고 물 다루기를 경험한다.'],
+  ['스포이트 옮기기','일상','스포이트로 물을 빨아올려 작은 칸에 한 방울씩 옮긴다. 손가락 끝의 힘 조절과 정밀한 눈손 협응을 기른다.'],
+  ['핀셋 옮기기','일상','핀셋으로 작은 물건(구슬, 솜공 등)을 집어 옮긴다. 엄지·검지의 미세한 힘 조절로 쓰기 준비를 한다.'],
+  ['젓가락 옮기기','일상','젓가락으로 물건을 집어 다른 그릇으로 옮긴다. 손가락의 협응과 우리 식생활 도구 사용을 익힌다.'],
+  ['국자 옮기기','일상','국자로 물이나 구슬을 떠서 다른 그릇에 옮긴다. 손목 회전과 수평 유지 조절을 익힌다.'],
+  ['깔때기로 따르기','일상','깔때기를 이용해 입구가 좁은 병에 물이나 곡물을 따른다. 따르기의 확장 활동으로 정확성과 집중력을 기른다.'],
+  ['체로 거르기','일상','체로 물이나 모래 속의 구슬·콩을 걸러 낸다. 도구의 쓰임을 알고 손목 조절을 익힌다.'],
+  ['콩 분류하기','일상','섞인 콩을 종류별로 손가락이나 숟가락으로 나눈다. 집게 잡기, 변별력, 분류 능력과 끈기를 기른다.'],
+  /* ── 일상생활 영역: 손 조절 (도구 쓰기) ── */
+  ['뚜껑 열고 닫기','일상','크기와 모양이 다른 병·통의 뚜껑을 돌려 열고 짝을 찾아 닫는다. 손목 돌리기와 크기 짝짓기를 익힌다.'],
+  ['자물쇠와 열쇠','일상','여러 자물쇠에 맞는 열쇠를 찾아 열고 잠근다. 손가락 조절, 짝짓기, 문제 해결력을 기른다.'],
+  ['너트와 볼트','일상','크기에 맞는 너트를 볼트에 돌려 끼우고 푼다. 양손 협응과 손목 회전, 크기 변별을 익힌다.'],
+  ['빨래집게 꽂기','일상','빨래집게를 눌러 열어 통 가장자리에 꽂는다. 엄지·검지 힘을 기르고 쓰기에 필요한 손가락 근육을 준비한다.'],
+  ['접기','일상','선이 그려진 천이나 종이를 반, 세모, 네모로 접는다. 모서리 맞추기의 정확성과 순서를 익힌다.'],
+  ['가위질','일상','가위를 바르게 쥐고 직선 → 곡선 → 도형 순으로 오린다. 손의 조절과 눈손 협응, 안전한 도구 사용을 익힌다.'],
+  ['풀칠하기','일상','풀을 알맞게 발라 종이를 붙인다. 양 조절과 순서, 작업의 마무리를 익힌다.'],
+  ['바느질','일상','구멍 뚫린 판에 굵은 바늘로 실을 꿰는 것부터 단추 달기까지 단계적으로 한다. 소근육과 집중력, 순서 기억을 기른다.'],
+  ['구멍 뚫기(펀칭)','일상','펀치 펜으로 도형 선을 따라 촘촘히 구멍을 뚫어 모양을 떼어 낸다. 손가락 힘 조절과 집중력을 기른다.'],
+  /* ── 일상생활 영역: 옷 입기 틀 ── */
+  ['지퍼 틀','일상','옷 입기 틀의 지퍼를 끝을 맞춰 끼우고 올리고 내린다. 스스로 옷 입기와 양손 협응을 익힌다.'],
+  ['똑딱단추 틀','일상','똑딱단추를 눌러 채우고 당겨 연다. 손가락 힘과 스스로 옷 입는 독립심을 기른다.'],
+  ['찍찍이 틀','일상','벨크로를 떼고 붙인다. 가장 쉬운 옷 입기 틀로 순서대로 여닫는 습관을 기른다.'],
+  ['버클 틀','일상','버클을 끼우고 빼며 가방·신발 버클 사용을 익힌다.'],
+  ['훅 단추 틀','일상','작은 갈고리(훅)를 고리에 걸고 뺀다. 정밀한 손가락 조절을 기른다.'],
+  ['안전핀 틀','일상','안전핀을 열어 천에 꽂고 다시 잠근다. 섬세한 손 조절과 안전한 사용법을 익힌다.'],
+  ['끈 꿰기 틀','일상','구멍에 끈을 엇갈려 꿰어 신발 끈 매기를 준비한다. 순서와 양손 협응을 익힌다.'],
+  ['리본 묶기 틀','일상','리본을 묶고 푼다. 옷 입기 틀 중 가장 어려운 단계로, 매듭 순서와 손가락 협응을 익힌다.'],
+  /* ── 일상생활 영역: 자기 돌봄 ── */
+  ['손 씻기','일상','물 받기, 비누칠, 문지르기, 헹구기, 닦기를 순서대로 한다. 위생 습관과 스스로 돌보는 독립심을 기른다.'],
+  ['코 풀기','일상','휴지를 접어 한쪽씩 코를 풀고 버린 뒤 손을 씻는다. 자기 돌봄과 위생을 익힌다.'],
+  ['머리 빗기','일상','거울을 보며 빗으로 머리를 빗고 정리한다. 자기 모습을 돌보는 습관을 기른다.'],
+  ['옷 걸기','일상','외투를 옷걸이에 걸고 제자리에 둔다. 소지품을 스스로 관리하는 질서감을 기른다.'],
+  ['신발 신고 정리하기','일상','좌우를 구별해 신발을 신고, 벗은 신발을 짝 맞춰 정리한다.'],
+  /* ── 일상생활 영역: 환경 돌봄 ── */
+  ['책상 닦기','일상','물 묻힌 스펀지로 책상을 왼쪽에서 오른쪽, 위에서 아래로 닦고 마른 천으로 마무리한다. 순서와 환경을 돌보는 책임감을 기른다.'],
+  ['거울 닦기','일상','세정액을 뿌리고 천으로 둥글게 닦아 얼룩을 없앤다. 깨끗해지는 결과를 눈으로 확인하며 성취감을 느낀다.'],
+  ['금속 광내기','일상','광택제를 발라 문지르고 닦아 금속을 반짝이게 한다. 여러 단계의 순서와 집중력을 기른다.'],
+  ['신발 닦기','일상','솔과 천으로 신발의 먼지를 털고 닦는다. 소지품을 아끼는 마음과 순서를 익힌다.'],
+  ['쓸고 쓰레받기','일상','작은 빗자루로 표시한 원 안에 쓸어 모아 쓰레받기에 담는다. 몸의 큰 움직임 조절과 환경 돌봄을 익힌다.'],
+  ['걸레질','일상','쏟은 물을 걸레로 닦고 짜서 정리한다. 실수를 스스로 해결하는 경험을 준다.'],
+  ['빨래하기','일상','작은 천을 비누로 빨고 헹궈 짜서 넌다. 긴 순서의 작업을 끝까지 해내는 힘을 기른다.'],
+  ['식물 돌보기','일상','화분에 물 주기, 잎 닦기, 시든 잎 떼기를 한다. 생명을 돌보는 책임감과 관찰력을 기른다.'],
+  ['꽃꽂이','일상','꽃병에 물을 붓고 줄기를 잘라 꽃을 꽂아 받침 위에 둔다. 아름다움을 가꾸는 감각과 순서를 익힌다.'],
+  /* ── 일상생활 영역: 음식 준비 ── */
+  ['식탁 차리기','일상','매트 위에 접시, 컵, 수저를 제자리에 놓는다. 일대일 대응과 질서, 함께 먹는 예절을 익힌다.'],
+  ['과일 껍질 벗기기','일상','귤·바나나 껍질을 벗겨 접시에 담는다. 손가락 조절과 음식을 준비해 나누는 기쁨을 경험한다.'],
+  ['과일 자르기','일상','안전한 칼로 바나나·오이 등을 썰어 나눈다. 도구의 안전한 사용과 독립심을 기른다.'],
+  ['빵에 잼 바르기','일상','버터나이프로 잼을 고르게 펴 바른다. 손목 조절과 음식 준비를 익힌다.'],
+
+  /* ── 감각 영역 ── */
+  ['꼭지없는 원기둥','감각','빨강·노랑·초록·파랑 4상자의 색 원기둥. 높이와 굵기 변화를 쌓고 늘어놓으며 비교한다. 꼭지원기둥의 확장 활동이다.'],
+  ['색판 상자 1','감각','빨강·노랑·파랑 3원색 색판 짝짓기. 색 이름을 3단계 교수법으로 익힌다.'],
+  ['색판 상자 2','감각','11가지 색의 짝짓기(주황, 초록, 보라, 분홍, 갈색, 회색, 흑백 등). 색의 이름과 변별을 넓힌다.'],
+  ['색판 상자 3','감각','9가지 색의 진하기 7단계 색판. 진한 것부터 연한 것까지 순서대로 배열하며 미세한 색 차이를 변별한다.'],
+  ['기하도형 카드','감각','기하도형 서랍의 도형과 꼭 맞는 그림 카드(색 채움 → 굵은 선 → 가는 선)를 짝지으며 구체에서 추상으로 옮겨 간다.'],
+  ['기하입체','감각','구, 정육면체, 원기둥, 원뿔, 삼각뿔, 사각뿔, 삼각기둥 등 파란 입체. 눈을 가리고 손으로 만져 알아맞히고 이름과 밑면을 익힌다.'],
+  ['구성삼각형','감각','여러 색·모양의 삼각형을 검은 선에 맞춰 붙여 사각형, 육각형 등 다른 도형을 만든다. 도형의 합성과 분해를 경험한다.'],
+  ['이항식 상자','감각','(a+b)³ 를 나타내는 정육면체·직육면체 8개를 뚜껑 그림에 맞춰 쌓는다. 감각적으로 패턴을 익히며 이후 대수의 기초가 된다.'],
+  ['삼항식 상자','감각','(a+b+c)³ 를 나타내는 27개 블록을 맞춰 쌓는다. 이항식 상자의 확장으로 색과 크기의 규칙을 찾는다.'],
+  ['천 짝짓기','감각','비단, 면, 모, 삼베 등 여러 천을 만져 같은 것끼리 짝짓고 이름을 익힌다. 촉각 변별과 어휘를 넓힌다.'],
+  ['온각병','감각','같은 모양의 금속병에 온도가 다른 물을 넣어 손으로 만져 짝짓고 차가운 것부터 따뜻한 것까지 배열한다.'],
+  ['온각판','감각','금속, 나무, 유리, 돌, 펠트 등 재질에 따라 차갑게 느껴지는 정도가 다른 판을 짝짓는다.'],
+  ['중량판','감각','크기는 같고 무게가 다른 나무판을 손바닥에 올려 무게를 느끼고 무거운 것과 가벼운 것을 나눈다.'],
+  ['신비주머니(입체인식)','감각','주머니 속 물건을 눈으로 보지 않고 손으로만 만져 알아맞히고 짝을 찾는다. 촉각과 근육 감각으로 모양을 인식한다.'],
+  ['음감벨','감각','같은 모양이지만 음높이가 다른 벨 두 세트. 같은 소리 짝짓기, 음계 순서 배열로 음악적 청각을 정련한다.'],
+  ['냄새병','감각','같은 냄새가 나는 병끼리 짝을 짓는다. 후각을 정련하고 향과 관련된 어휘를 넓힌다.'],
+  ['맛보기병','감각','단맛, 짠맛, 신맛, 쓴맛 병을 한 방울씩 맛보고 같은 맛끼리 짝짓는다. 미각을 정련하고 맛 이름을 익힌다.'],
+  ['삼각형 상자','감각','정삼각형을 여러 조각으로 나눈 삼각형을 맞추며 크기·모양이 다른 조각으로 같은 도형이 됨을 경험한다.'],
+  ['나뭇잎 서랍','감각·문화','여러 잎 모양 조각을 틀에 맞추고 잎 모양 이름을 익힌다. 잎 모양 카드와 짝짓고 실제 잎과 비교한다.'],
+
+  /* ── 언어 영역 ── */
+  ['말놀이(소리 찾기)','언어','"ㄱ 소리로 시작하는 것은?" 처럼 낱말의 첫소리·끝소리를 찾는 놀이. 소리에 대한 민감성(음운 인식)을 길러 읽기·쓰기를 준비한다.'],
+  ['명칭 카드(그림 카드)','언어','실물이나 모형과 그림 카드를 짝지으며 이름을 익힌다. 과일, 동물, 탈것 등 주제별로 어휘를 넓힌다.'],
+  ['3단계 명칭 카드','언어','그림+이름 카드, 그림 카드, 이름 카드 세 가지를 짝지으며 그림과 글자를 연결한다. 읽기 초기 단계 활동.'],
+  ['모래종이 글자','언어','모래종이로 된 자음·모음을 손가락으로 쓰는 순서대로 따라 쓰며 소리와 모양을 연결한다. 3단계 교수법을 사용한다.'],
+  ['모래상자 쓰기','언어','모래나 소금을 깐 쟁반에 손가락으로 글자를 써 보고 흔들어 지운다. 모래종이 글자 다음 단계의 쓰기 연습.'],
+  ['이동 글자(움직이는 자모)','언어','나무·플라스틱 자음·모음 조각을 늘어놓아 들리는 소리대로 낱말을 만든다. 손으로 쓰기 전에 생각을 글로 구성하는 경험을 준다.'],
+  ['철제 도형(메탈 인셋)','언어','금속 도형 틀의 안팎을 색연필로 따라 그리고 선을 채운다. 연필 쥐기, 손목 조절, 선 긋기로 쓰기를 준비한다.'],
+  ['칠판 쓰기','언어','작은 칠판에 분필로 선, 도형, 글자를 크게 써 보고 지운다. 팔 전체의 움직임으로 쓰기를 연습한다.'],
+  ['사물과 낱말 짝짓기','언어','작은 사물(모형) 옆에 그 이름이 쓰인 카드를 읽고 놓는다. 읽은 것을 사물로 확인하는 첫 읽기 활동.'],
+  ['낱말 읽기 카드','언어','받침 없는 글자 → 받침 있는 글자 → 어려운 받침 순으로 단계별 낱말 카드를 읽는다.'],
+  ['문장 카드','언어','짧은 문장을 읽고 그 내용대로 행동하거나 그림과 짝짓는다. 읽은 뜻을 이해하는지 확인한다.'],
+  ['품사 상자(문법 기호)','언어','명사·동사·형용사 등을 상징 기호로 나타내고 낱말 카드에 올려 문장의 구성 요소를 놀이로 익힌다.'],
+  ['이야기 순서 카드','언어','그림 카드를 일어난 순서대로 늘어놓고 이야기로 말한다. 순서 개념과 표현력을 기른다.'],
+  ['반대말 짝짓기','언어','크다-작다, 길다-짧다 등 반대 개념의 그림이나 카드를 짝짓고 말해 본다. 어휘와 비교 개념을 넓힌다.'],
+  ['동시와 노래','언어','짧은 동시·동요를 듣고 따라 말하며 운율과 낱말의 소리를 즐긴다.'],
+
+  /* ── 수 영역: 0~10 ── */
+  ['수막대와 숫자카드','수','수막대 끝에 알맞은 숫자 카드를 놓아 양과 숫자 기호를 연결한다. 모래종이 숫자 다음 단계.'],
+  ['수 기억 게임','수','접힌 숫자 쪽지를 뽑아 그 수만큼 물건을 기억해 가져온다. 수를 머릿속에 기억하고 양으로 옮기는 연습.'],
+  ['숫자 쓰기','수','모래상자·칠판·종이에 0~9 숫자를 쓰는 순서대로 써 본다.'],
+  /* ── 수 영역: 십진법 (황금구슬) ── */
+  ['황금구슬 소개','수','낱개 구슬(1), 10구슬 막대(10), 100구슬 판(100), 1000구슬 정육면체(1000)를 만지고 이름을 익힌다. 자릿값을 양으로 느낀다.'],
+  ['큰 숫자 카드','수','1~9(초록), 10~90(파랑), 100~900(빨강), 1000~9000(초록) 카드를 겹쳐 큰 수를 만들며 자릿값을 기호로 익힌다.'],
+  ['황금구슬과 숫자카드 짝짓기','수','숫자카드로 수를 만들고 그만큼 황금구슬을 가져오거나, 구슬을 보고 숫자카드를 놓는다. 양과 기호의 십진 연결.'],
+  ['은행 놀이(교환 게임)','수','낱개 10개를 10막대 1개로, 10막대 10개를 100판 1개로 바꾸는 교환 놀이. 자리올림·자리내림의 원리를 경험한다.'],
+  ['황금구슬 덧셈','수','두 수만큼 구슬을 모아 세고 10이 되면 바꿔 답을 구한다. 정적·동적(받아올림) 덧셈의 의미를 체험한다.'],
+  ['황금구슬 뺄셈','수','큰 수의 구슬에서 작은 수만큼 덜어 낸다. 필요하면 큰 단위를 바꿔(받아내림) 뺀다.'],
+  ['황금구슬 곱셈','수','같은 수를 여러 번 모아 더하며 곱셈이 반복된 덧셈임을 경험한다.'],
+  ['황금구슬 나눗셈','수','구슬을 여러 사람에게 똑같이 나눠 주며 나눗셈의 의미를 경험한다.'],
+  ['우표놀이','수','1·10·100·1000 이 적힌 색 타일로 사칙연산을 한다. 황금구슬보다 추상화된 단계.'],
+  ['점놀이','수','종이 격자에 점을 찍어 자리별로 더하고 받아올림을 표시한다. 큰 수 덧셈을 반추상 단계로 연습한다.'],
+  /* ── 수 영역: 셈하기 ── */
+  ['세갱판 1 (11~19)','수','10 판에 1~9 숫자 조각을 끼워 11~19 를 만들고 10구슬 막대와 낱개 구슬로 양을 맞춘다. 십 몇의 이름을 익힌다.'],
+  ['세갱판 2 (10~99)','수','10, 20 … 90 판에 1~9를 끼워 두 자리 수를 만들고 구슬로 양을 맞춘다. 1부터 99까지 이어 세기.'],
+  ['100판(숫자 판)','수','1~100 숫자 타일을 10×10 판에 순서대로 놓는다. 수의 배열 규칙과 연속 수 세기를 익힌다.'],
+  ['100 사슬','수','10구슬 막대 10개를 이은 사슬을 펴서 1부터 100까지 세며 10마다 화살표 카드를 놓는다. 사슬을 접어 100판과 비교한다.'],
+  ['1000 사슬','수','10구슬 100개가 이어진 긴 사슬을 펴서 1000까지 센다. 큰 수의 길이와 양을 몸으로 느낀다.'],
+  ['짧은 구슬 사슬(뛰어 세기)','수','2, 3 … 10 의 색깔 구슬 사슬로 2씩, 3씩 뛰어 세며 화살표 카드를 놓는다. 곱셈과 배수의 기초.'],
+  ['색구슬 계단','수','1~9 색구슬 막대를 계단처럼 배열하고 색과 수를 짝짓는다. 이후 덧셈·뺄셈 뱀 놀이에 쓰인다.'],
+  ['덧셈 뱀 놀이','수','색구슬 막대를 이어 만든 뱀을 10씩 세어 금색 10막대로 바꿔 나가며 10 만들기와 덧셈을 연습한다.'],
+  ['뺄셈 뱀 놀이','수','덧셈 뱀 놀이에 회색(빼는 수) 구슬을 넣어 빼며 10 단위로 바꾸어 뺄셈을 연습한다.'],
+  /* ── 수 영역: 기억(연산 암기) ── */
+  ['덧셈 띠판','수','빨강·파랑 띠를 판 위에 놓아 한 자리 수 덧셈의 합을 구하고 기록한다. 덧셈 조합을 기억하도록 돕는다.'],
+  ['뺄셈 띠판','수','띠를 가려 빼는 수만큼 줄이며 뺄셈의 답을 구한다. 뺄셈 조합을 기억하도록 돕는다.'],
+  ['곱셈 구슬판','수','구멍 판에 빨간 구슬을 곱하는 수만큼 줄지어 놓아 곱셈의 답을 구하고 구구단표에 기록한다.'],
+  ['나눗셈 구슬판','수','초록 구슬을 사람(볼링핀) 수만큼 똑같이 나눠 놓아 몫과 나머지를 구한다.'],
+  ['연산 표(차트)','수','덧셈·뺄셈·곱셈·나눗셈 기억용 표. 띠판·구슬판으로 구한 답을 표에서 찾아 확인하며 외운다.'],
+  /* ── 수 영역: 분수 · 주판 ── */
+  ['분수 원판','수','1을 2, 3 … 10 조각으로 나눈 빨간 금속 원판. 조각을 꺼내고 맞추며 분수의 이름과 크기를 비교한다.'],
+  ['작은 주판','수','1·10·100·1000 자리 구슬을 옮겨 수를 나타내고 덧셈한다. 구체물에서 추상적 계산으로 넘어가는 다리 역할.'],
+  ['시계','수','바늘을 움직여 정각, 30분, 5분 단위로 시각 읽기를 익힌다. 하루 일과와 연결해 시간 개념을 기른다.'],
+  ['돈 놀이','수','동전과 지폐를 세고 바꾸며 물건 사고팔기 놀이를 한다. 수를 생활 속에서 사용한다.'],
+
+  /* ── 문화 영역: 지리 ── */
+  ['모래종이 지구본','문화','육지는 모래종이, 바다는 매끈한 파랑으로 된 지구본. 손으로 만지며 땅과 물을 구별한다.'],
+  ['색깔 지구본','문화','대륙마다 다른 색으로 칠한 지구본. 대륙의 이름과 위치를 익히고 세계지도 퍼즐로 이어진다.'],
+  ['세계지도 퍼즐','문화','대륙 조각을 꼭지로 잡아 맞추는 세계지도. 대륙 이름을 3단계 교수법으로 익히고 지도를 따라 그린다.'],
+  ['대륙별 지도 퍼즐','문화','아시아, 유럽, 아프리카 등 대륙별 나라 조각 퍼즐. 나라 이름과 위치를 익힌다.'],
+  ['우리나라 지도 퍼즐','문화','시·도 조각을 맞추며 우리나라 지역 이름과 위치를 익힌다. 사는 곳을 찾아본다.'],
+  ['국기','문화','나라 국기를 꽂거나 카드와 짝지으며 나라 이름과 국기를 익힌다.'],
+  ['땅과 물의 모양','문화','섬과 호수, 반도와 만, 지협과 해협 등을 쟁반에 물을 부어 직접 만든다. 지형 이름을 체험으로 익힌다.'],
+  ['대륙 상자(문화 카드)','문화','대륙별 사람, 동물, 집, 음식, 악기 사진과 물건을 보며 다양한 문화를 알아간다.'],
+  /* ── 문화 영역: 생물 ── */
+  ['식물 퍼즐','문화','꽃, 나무, 잎의 부분(뿌리·줄기·잎·꽃잎 등)을 꼭지 조각으로 맞추며 식물 구조와 이름을 익힌다.'],
+  ['동물 몸 부분 카드','문화','물고기, 개구리, 새, 거북, 말 등 동물의 몸 부분 이름 카드. 동물 퍼즐과 함께 3단계 카드로 활용한다.'],
+  ['살아 있는 것 / 없는 것','문화','그림이나 실물을 생물과 무생물로 나눈다. 생명의 특징(먹고 자라고 숨쉼)을 생각해 본다.'],
+  ['척추동물 분류','문화','어류, 양서류, 파충류, 조류, 포유류 그림 카드를 무리별로 나누며 동물의 특징을 비교한다.'],
+  ['생애 주기 카드','문화','개구리, 나비, 닭 등의 한살이를 순서대로 배열하며 성장과 변화를 이해한다.'],
+  ['씨앗 심고 관찰하기','문화','씨앗을 심고 물을 주며 싹이 트고 자라는 과정을 관찰하고 그림으로 기록한다.'],
+  /* ── 문화 영역: 과학 · 시간 ── */
+  ['뜨고 가라앉기','문화','물에 여러 물건을 넣어 보기 전에 예상하고 결과대로 나눈다. 관찰, 예측, 분류의 과학적 태도를 기른다.'],
+  ['자석에 붙는 것','문화','자석을 대어 보고 붙는 것과 붙지 않는 것으로 나눈다. 재질에 대한 호기심을 기른다.'],
+  ['계절 카드','문화','봄·여름·가을·겨울의 날씨, 옷, 자연 그림을 분류하며 계절의 변화를 이해한다.'],
+  ['달력','문화','요일, 날짜, 달 이름을 매일 확인하고 오늘을 표시한다. 시간의 흐름과 순서를 익힌다.'],
+  ['생일 축하(해 주위 돌기)','문화','초를 해로 삼아 지구본을 들고 나이만큼 돌며 한 해 한 해의 사진과 이야기를 나눈다. 1년 = 지구가 해를 한 바퀴 도는 것.'],
+  /* ── 문화 영역: 미술 · 음악 ── */
+  ['물감 그리기','문화','이젤에 물감과 붓으로 자유롭게 표현하고 붓 씻기와 정리까지 스스로 한다.'],
+  ['점토 놀이','문화','점토를 주무르고 굴리고 늘여 모양을 만든다. 손의 힘과 입체 표현을 기른다.'],
+  ['리듬 악기','문화','탬버린, 캐스터네츠, 트라이앵글 등으로 박자에 맞춰 연주하며 소리와 리듬을 즐긴다.'],
 ];
 
 /* ═════════════════════════════════════════════════════════
@@ -749,7 +917,21 @@ async function loadAll() {
     S.settings.currentWeek = today();
     await api('upsert', { table: 'settings', rows: [{ id: 1, current_week: S.settings.currentWeek }] });
   }
+  await fillDefaultMats();
   await loadWeek(S.settings.currentWeek || today());
+}
+/* 기본 교구 목록이 늘어나면(MAT_VER 올림) 사전에 없는 교구만 한 번 채워 넣음. 이미 있는 이름은 건드리지 않음 */
+const MAT_VER = 2, MAT_VER_KEY = 'kidsnote-mat-ver';
+async function fillDefaultMats() {
+  let v = 0; try { v = +localStorage.getItem(MAT_VER_KEY) || 0; } catch (e) {}
+  if (v >= MAT_VER) return;
+  const rows = DEFAULT_MATERIALS.filter(([n]) => !matByName(n)).map(([name, area, descr]) => ({ id: uuid(), name, area, descr }));
+  if (rows.length) {
+    try { await api('insert', { table: 'materials', rows }); } catch (e) { toast('교구를 추가하지 못했어요: ' + e.message); return; }
+    S.materials.push(...rows.map(fromMat));
+    setTimeout(() => toast(`몬테소리 교구 ${rows.length}개를 교구 사전에 추가했어요`), 800);
+  }
+  try { localStorage.setItem(MAT_VER_KEY, String(MAT_VER)); } catch (e) {}
 }
 
 async function loadWeek(date) {
@@ -797,11 +979,20 @@ function sortLessons(k) { k.lessons.sort((a, b) => a.d.localeCompare(b.d)); }
 function lessonInfo(k, date) {
   if (!k) return null;
   const i = k.lessons.findIndex(l => l.d === date); if (i < 0) return null;
-  return { d: date, h: k.lessons[i].h, sem: (+k.startSem || 1) + Math.floor(i / PER_SEM), no: i % PER_SEM + 1 };
+  return { d: date, h: k.lessons[i].h, sem: (+k.startSem || 1) + Math.floor(i / PER_SEM), no: i % PER_SEM + 1, off: !!k.lessons[i].mk?.length };
 }
+/* 휴강 → 보강: 휴강한 회차에 mk:[{d,h,m,dur}] 를 달아 둠 (회차 번호는 그대로, 보강 합계 = 1회차 40분) */
+const LESSON_MIN = 40;
+const ampm = h => (h < 12 ? '오전' : '오후');
+const hm = (h, m) => `${h > 12 ? h - 12 : h}:${pad2(m || 0)}`;
+function tRange(h, m, dur) {
+  const e = h * 60 + (+m || 0) + (+dur || 0), eh = Math.floor(e / 60), em = e % 60;
+  return `${ampm(h)} ${hm(h, m)}~${ampm(eh) === ampm(h) ? '' : ampm(eh) + ' '}${hm(eh, em)}`;
+}
+const mkLabel = p => `${kDate(p.d)} ${tRange(p.h, p.m, p.dur)} (${p.dur}분)`;
 const nextLesson = (k, date) => k.lessons.find(l => l.d > date) || null;
 const anySched = () => S.children.some(k => k.lessons.length);
-function defaultOn(cid) { return anySched() ? !!lessonInfo(kidById(cid), S.week.date) : true; }
+function defaultOn(cid) { if (!anySched()) return true; const i = lessonInfo(kidById(cid), S.week.date); return !!i && !i.off; }
 const isOn = cid => S.week.entries[cid]?.on ?? defaultOn(cid);
 function titleOf(k, date) {
   const i = lessonInfo(k, date);
@@ -969,8 +1160,13 @@ let calSel = snapSunday(today());
 let calMonth = calSel.slice(0, 7);
 function dayMap() {
   const map = {};
-  S.children.forEach(k => k.lessons.forEach(l => { (map[l.d] ||= []).push({ k, ...lessonInfo(k, l.d) }); }));
-  Object.values(map).forEach(a => a.sort((x, y) => (x.h ?? 99) - (y.h ?? 99)));
+  S.children.forEach(k => k.lessons.forEach(l => {
+    const info = lessonInfo(k, l.d);
+    (map[l.d] ||= []).push({ k, ...info });
+    (l.mk || []).forEach((p, j) => (map[p.d] ||= []).push({ k, d: p.d, h: p.h, m: p.m || 0, dur: p.dur, mk: true, of: l.d, part: j + 1, total: l.mk.length, sem: info.sem, no: info.no }));
+  }));
+  const at = x => (x.h ?? 99) * 60 + (x.m || 0);
+  Object.values(map).forEach(a => a.sort((x, y) => at(x) - at(y)));
   return map;
 }
 function renderCal() {
@@ -986,7 +1182,7 @@ function renderCal() {
     const cls = ['cal-day', dt.getMonth() !== m - 1 && 'out', dt.getDay() === 0 && 'sunday', iso === td && 'today', iso === calSel && 'sel'].filter(Boolean).join(' ');
     h += `<div class="${cls}" data-d="${iso}"><span class="n">${dt.getDate()}</span>` +
       evs.slice(0, 2).map(ev => `<span class="nm evn">${ev.icon || '📌'} ${esc(ev.title)}</span>`).join('') +
-      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); return `<span class="nm" style="background:${bg};color:${fg}">${x.h != null ? x.h + ' ' : ''}${esc(x.k.name)}</span>`; }).join('') +
+      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); return `<span class="nm" style="background:${bg};color:${fg}${x.off ? ';opacity:.55' : ''}">${x.h != null ? (x.mk ? hm(x.h, x.m) : x.h) + ' ' : ''}${esc(x.k.name)}${x.mk ? ' 보강' : x.off ? ' 휴강' : ''}</span>`; }).join('') +
       (list.length > cap ? `<span class="more">+${list.length - cap}명</span>` : '') +
       (list.length || evs.length ? `<span class="dots">${evs.length ? '<i class="evd"></i>' : ''}${list.map(x => `<i style="background:${colorOf(S.children.indexOf(x.k))[1]}"></i>`).join('')}</span>` : '') + `</div>`;
   }
@@ -1005,7 +1201,7 @@ function renderDay(map = dayMap()) {
   $('#dayPanel').innerHTML = `
     <div class="day-head">
       <div><div class="d">${dt.getMonth() + 1}월 ${dt.getDate()}일 (${'일월화수목금토'[dt.getDay()]})</div>
-      <p class="hint">${list.length ? `🧒 ${list.length}명 수업` : '수업이 없는 날이에요'}${evs.length ? ` · 📌 일정 ${evs.length}개` : ''}</p></div>
+      <p class="hint">${list.length ? `🧒 ${new Set(list.map(x => x.k)).size}명 수업` : '수업이 없는 날이에요'}${evs.length ? ` · 📌 일정 ${evs.length}개` : ''}</p></div>
     </div>
     ${evs.length ? `<div class="evlist">${evs.map(ev => `<div class="ev" data-ev="${ev.id}">
       <span class="evic">${ev.icon || '📌'}</span>
@@ -1045,27 +1241,73 @@ function saveEvent() {
   else toast('일정을 추가했어요');
 }
 let editing = '';   // 일정 변경 중인 수업 "아이id|날짜"
+let mkRows = null;  // 보강 입력 중인 줄 [{d, t:'09:40', dur}]
+const MK_DURS = [10, 15, 20, 25, 30, 35, 40];
+const mkSum = () => (mkRows || []).reduce((s, r) => s + (+r.dur || 0), 0);
+function mkFromLesson(k, d) {
+  const l = k.lessons.find(x => x.d === d);
+  if (l?.mk?.length) return l.mk.map(p => ({ d: p.d, t: `${pad2(p.h)}:${pad2(p.m || 0)}`, dur: p.dur }));
+  const h = l?.h ?? k.hour;
+  return [{ d: nextLesson(k, d)?.d || '', t: h != null ? `${pad2(h)}:00` : '', dur: LESSON_MIN }];
+}
+function readMk() {
+  if (!mkRows) return;
+  mkRows = $$('#dayPanel .mkrow').map(r => ({ d: r.querySelector('[data-m=d]').value, t: r.querySelector('[data-m=t]').value, dur: +r.querySelector('[data-m=dur]').value }));
+}
+function mkSumHtml() { const s = mkSum(); return `합계 <b class="${s === LESSON_MIN ? 'ok' : 'bad'}">${s}분</b> / ${LESSON_MIN}분`; }
+function mkForm(x) {
+  return `<div class="ledit mkform">
+    <div class="full mkhead"><b>보강 일정 (${x.sem}-${x.no})</b><span class="mksum">${mkSumHtml()}</span></div>
+    ${mkRows.map((r, i) => `<div class="mkrow" data-i="${i}">
+      <input type="date" data-m="d" value="${r.d}" aria-label="보강 날짜">
+      <input type="time" data-m="t" value="${r.t}" step="300" aria-label="보강 시작 시간">
+      <select data-m="dur" aria-label="보강 시간">${MK_DURS.map(m => `<option value="${m}" ${+r.dur === m ? 'selected' : ''}>${m}분</option>`).join('')}</select>
+      ${mkRows.length > 1 ? `<button class="mkx" data-op="mkdel" title="이 줄 지우기" aria-label="이 줄 지우기">✕</button>` : '<span></span>'}
+    </div>`).join('')}
+    <p class="hint full">예) 11/22 오전 9:40 (20분) + 11/29 오전 9:40 (20분) · 또는 11/22 오후 6:00 (40분)</p>
+    <div class="ledit-btns">
+      <button class="lbtn ghost" data-op="mkadd">＋ 보강 날짜 추가</button>
+      <span class="spacer"></span>
+      ${x.off ? `<button class="lbtn ghost" data-op="mkclear">휴강 취소</button>` : `<button class="lbtn ghost" data-op="push" title="보강 없이 이 수업을 빼고 마지막 회차를 한 주 뒤로 미뤄요">보강 없이 미루기</button>`}
+      <button class="lbtn ghost" data-op="cancel">취소</button>
+      <button class="lbtn solid" data-op="mksave">보강 저장</button>
+    </div>
+  </div>`;
+}
 function lessonRow(x) {
   const [bg, fg] = colorOf(S.children.indexOf(x.k));
-  const key = `${x.k.id}|${x.d}`, open = editing === key;
-  return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
-    <div class="lrow">
-      <div class="avatar sm" style="background:#fff;color:${fg}">${esc((x.k.name || '?').slice(-2))}</div>
+  const av = `<div class="avatar sm" style="background:#fff;color:${fg}">${esc((x.k.name || '?').slice(-2))}</div>`;
+  if (x.mk) return `<div class="lesson mk" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" data-of="${x.of}">
+    <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no}</span></div>
-        <div class="sub">${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no} 보강${x.total > 1 ? ` ${x.part}/${x.total}` : ''}</span></div>
+        <div class="sub">${tRange(x.h, x.m, x.dur)} · ${x.dur}분 · ${kDate(x.of)} 휴강분</div>
       </div>
       <div class="lacts">
-        <button class="lbtn" data-op="edit">🗓 <span class="lg">일정 </span>변경</button>
+        <button class="lbtn" data-op="mkgo">🗓 <span class="lg">보강 </span>변경</button>
         <button class="lbtn" data-op="fb">✏️ 피드백</button>
       </div>
     </div>
+  </div>`;
+  const key = `${x.k.id}|${x.d}`, open = editing === key;
+  const l = x.off ? x.k.lessons.find(y => y.d === x.d) : null;
+  return `<div class="lesson ${open ? 'editing' : ''} ${x.off ? 'off' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
+    <div class="lrow">${av}
+      <div class="linfo">
+        <div class="ttl">${esc(x.k.name || '이름 없음')} <span class="tag" style="background:#fff;color:${fg}">${x.sem}-${x.no}${x.off ? ' 휴강' : ''}</span></div>
+        <div class="sub">${x.off ? '보강 ' + l.mk.map(mkLabel).join(' · ') : `${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}`}</div>
+      </div>
+      <div class="lacts">
+        <button class="lbtn" data-op="edit">🗓 <span class="lg">${x.off ? '보강 ' : '일정 '}</span>변경</button>
+        ${x.off ? '' : '<button class="lbtn" data-op="fb">✏️ 피드백</button>'}
+      </div>
+    </div>
     <button class="lx" data-op="del" title="이 수업 지우기" aria-label="이 수업 지우기">✕</button>
-    ${open ? `<div class="ledit">
+    ${open && mkRows ? mkForm(x) : open ? `<div class="ledit">
       <label>날짜<input type="date" data-e="date" value="${x.d}"></label>
       <label>시간<select data-e="hour">${hourOptions(x.h)}</select></label>
       <div class="ledit-btns">
-        <button class="lbtn ghost" data-op="push" title="이 수업을 휴강하고 이후 회차를 한 주씩 뒤로 미뤄요">휴강 처리</button>
+        <button class="lbtn ghost" data-op="mkopen" title="이 수업을 휴강하고 보강 날짜·시간을 정해요">휴강 처리</button>
         <span class="spacer"></span>
         <button class="lbtn ghost" data-op="cancel">취소</button>
         <button class="lbtn solid" data-op="apply">변경하기</button>
@@ -1087,8 +1329,13 @@ $('#dayPanel').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.is
 $('#calPrev').onclick = () => { const [y, m] = calMonth.split('-').map(Number); calMonth = isoOf(new Date(y, m - 2, 1)).slice(0, 7); renderCal(); };
 $('#calNext').onclick = () => { const [y, m] = calMonth.split('-').map(Number); calMonth = isoOf(new Date(y, m, 1)).slice(0, 7); renderCal(); };
 $('#calToday').onclick = () => { calSel = today(); calMonth = calSel.slice(0, 7); renderCal(); };
+$('#dayPanel').addEventListener('input', e => {
+  if (!e.target.closest('.mkrow')) return;
+  readMk(); const s = $('#dayPanel .mksum'); if (s) s.innerHTML = mkSumHtml();
+});
 $('#dayPanel').addEventListener('change', e => {
   const t = e.target;
+  if (t.closest('.mkrow')) { readMk(); const s = $('#dayPanel .mksum'); if (s) s.innerHTML = mkSumHtml(); return; }
   if (t.dataset.add !== undefined) {
     const k = kidById(t.value); if (!k) return;
     k.lessons.push({ d: calSel, h: t.dataset.add === '' ? (k.hour ?? null) : +t.dataset.add });
@@ -1110,8 +1357,43 @@ $('#dayPanel').addEventListener('click', async e => {
   const row = b.closest('.lesson'); if (!row) return;
   const k = kidById(row.dataset.cid); const d = row.dataset.d;
   if (b.dataset.op === 'fb') return openRecord(d, k.id);
-  if (b.dataset.op === 'edit') { editing = editing === `${k.id}|${d}` ? '' : `${k.id}|${d}`; return renderDay(); }
-  if (b.dataset.op === 'cancel') { editing = ''; return renderDay(); }
+  if (b.dataset.op === 'edit') {
+    editing = editing === `${k.id}|${d}` ? '' : `${k.id}|${d}`;
+    mkRows = editing && k.lessons.find(x => x.d === d)?.mk?.length ? mkFromLesson(k, d) : null;
+    return renderDay();
+  }
+  if (b.dataset.op === 'cancel') { editing = ''; mkRows = null; return renderDay(); }
+  if (b.dataset.op === 'mkgo') {   // 보강 줄에서 → 휴강한 날로 가서 보강 일정 고치기
+    const of = row.dataset.of; calSel = of; calMonth = of.slice(0, 7);
+    editing = `${k.id}|${of}`; mkRows = mkFromLesson(k, of); evForm = false; renderCal();
+    setTimeout(() => $('#dayPanel .mkform')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    return;
+  }
+  if (b.dataset.op === 'mkopen') { mkRows = mkFromLesson(k, d); return renderDay(); }
+  if (b.dataset.op === 'mkadd') {
+    readMk(); const left = LESSON_MIN - mkSum(), last = mkRows[mkRows.length - 1] || {};
+    if (mkRows.length === 1 && left <= 0) mkRows[0].dur = LESSON_MIN / 2;   // 40분 한 줄이면 20 + 20 으로 나눔
+    mkRows.push({ d: last.d ? addDays(last.d, 7) : '', t: last.t || '', dur: left > 0 && MK_DURS.includes(left) ? left : LESSON_MIN / 2 });
+    return renderDay();
+  }
+  if (b.dataset.op === 'mkdel') { readMk(); mkRows.splice(+b.closest('.mkrow').dataset.i, 1); return renderDay(); }
+  if (b.dataset.op === 'mksave') {
+    readMk(); const l = k.lessons.find(x => x.d === d); if (!l) return;
+    if (mkRows.some(r => !r.d || !r.t)) return toast('보강 날짜와 시간을 모두 적어 주세요');
+    const sum = mkSum();
+    if (sum !== LESSON_MIN) return toast(`보강 합계가 ${sum}분이에요. ${LESSON_MIN}분을 채워 주세요`);
+    l.mk = mkRows.map(r => { const [hh, mm] = r.t.split(':').map(Number); return { d: r.d, h: hh, m: mm, dur: +r.dur }; })
+      .sort((a, b) => (a.d + pad2(a.h) + pad2(a.m)).localeCompare(b.d + pad2(b.h) + pad2(b.m)));
+    editing = ''; mkRows = null; calChanged(k);
+    toast(`${k.name} ${kDate(d)} 휴강 · 보강 ${l.mk.length}번 저장했어요`);
+    return;
+  }
+  if (b.dataset.op === 'mkclear') {
+    if (!confirm(`${k.name} ${kDate(d)} 휴강을 취소하고 보강 일정을 지울까요?`)) return;
+    const l = k.lessons.find(x => x.d === d); if (l) delete l.mk;
+    editing = ''; mkRows = null; calChanged(k); toast('휴강을 취소했어요');
+    return;
+  }
   if (b.dataset.op === 'apply') {
     const l = k.lessons.find(x => x.d === d); if (!l) return;
     const nd = row.querySelector('[data-e=date]').value; const hv = row.querySelector('[data-e=hour]').value;
@@ -1123,7 +1405,7 @@ $('#dayPanel').addEventListener('click', async e => {
     return;
   }
   if (b.dataset.op === 'push') {
-    editing = '';
+    editing = ''; mkRows = null;
     if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고, 이후 회차를 한 주씩 뒤로 미룰까요?`)) return renderDay();
     const h = k.lessons.find(x => x.d === d).h;
     k.lessons = k.lessons.filter(x => x.d !== d);
@@ -1892,7 +2174,7 @@ $('#importPick').onchange = async e => {
       if (c.traits) k.traits = c.traits;
       if (c.note) k.note = c.note;
       if (c.hour != null) k.hour = +c.hour;
-      if (c.lessons?.length) { k.lessons = c.lessons.map(l => ({ d: l.d, h: l.h ?? null })); sortLessons(k); k.startSem = +c.startSem || 1; k.startDate = c.startDate || k.lessons[0].d; }
+      if (c.lessons?.length) { k.lessons = c.lessons.map(l => ({ d: l.d, h: l.h ?? null, ...(l.mk?.length ? { mk: l.mk } : {}) })); sortLessons(k); k.startSem = +c.startSem || 1; k.startDate = c.startDate || k.lessons[0].d; }
       mark('children', k.id);
     }
     await flush();
