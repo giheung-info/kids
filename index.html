@@ -283,6 +283,19 @@
   .evform .full{grid-column:1/-1}
   /* 휴강 · 보강 */
   .lesson.off{opacity:.6}
+  /* 추천교구 */
+  .reccard+.reccard{margin-top:10px}
+  .rechead{display:flex;align-items:center;gap:10px}
+  .recwho{flex:1;min-width:0}
+  .reclist{margin:12px 0 4px;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+  .reclist li .hint{margin-top:2px}
+  .recrecent{margin-top:8px;font-size:12px}
+  /* 수료 준비 */
+  .nm.gp{background:#fff1c7 !important;color:#9a7413 !important;font-weight:800}
+  .nm small{font-size:.85em;opacity:.85;font-weight:700}
+  .ev.gp{background:#fff6d8}
+  .ev.gp .gname{font-weight:800;color:#9a7413}
+  .gbadge{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:#fff1c7;color:#9a7413;white-space:nowrap}
   .mkform .full{grid-column:1/-1}
   .mkhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
   .mkhead .bad{color:var(--danger)} .mkhead .ok{color:#2f8f74}
@@ -503,7 +516,7 @@
   <section class="tab" id="tab-week">
     <div class="card pad recbar">
       <div class="rec-top">
-        <div class="seg" id="recMode"><button data-m="date" class="on">📅 일자별</button><button data-m="name">🧒 이름별</button></div>
+        <div class="seg" id="recMode"><button data-m="date" class="on">📅 일자별</button><button data-m="name">🧒 이름별</button><button data-m="rec">🧩 추천교구</button></div>
         <input type="text" id="recSearch" placeholder="🔍 이름 검색" autocomplete="off">
       </div>
       <div class="chiprow" id="recDates"></div>
@@ -517,6 +530,7 @@
       </div>
     </div>
     <div id="recNameView" hidden></div>
+    <div id="recRecView" hidden></div>
   </section>
 
   <!-- 아이 프로필 -->
@@ -991,6 +1005,16 @@ function mkParts(k) {
   return out;
 }
 const mkTag = (sem, no) => `${sem}-${no}/${no + 1} 보강`;
+/* 수료: 4-12 = 수료 선물 주는 날 → 4-10 수업 하루 전날(토)에 "수료증, 선물 준비" 표시 */
+const GRAD_SEM = 4, GRAD_PREP_NO = 10, GRAD_NO = 12;
+function gradPrepOn(iso) {
+  const t = addDays(iso, 1);
+  return S.children.filter(k => { const i = lessonInfo(k, t); return i && i.sem === GRAD_SEM && i.no === GRAD_PREP_NO; });
+}
+const isGrad = x => x.sem === GRAD_SEM && x.no === GRAD_NO && !x.mkOnly;
+const isGradPrep = x => x.sem === GRAD_SEM && x.no === GRAD_PREP_NO && !x.mkOnly;
+const gradIcon = x => isGrad(x) ? ' 🎓' : isGradPrep(x) ? ' 🎁' : '';
+const gradBadge = x => isGrad(x) ? '<span class="gbadge">🎓 수료 선물</span>' : isGradPrep(x) ? '<span class="gbadge">🎁 수료증·선물 준비</span>' : '';
 const sortMk = a => a.sort((x, y) => (x.d + pad2(x.h) + pad2(x.m || 0)).localeCompare(y.d + pad2(y.h) + pad2(y.m || 0)));
 // 보강 시간을 기준 수업에 붙임: 첫 보강 날의 수업 → 그 뒤 첫 수업 → 그 전 마지막 수업
 function attachMk(k, parts) {
@@ -1147,12 +1171,12 @@ function chipInput(box, list, onChange) {
       `<input type="text" list="matNames" placeholder="${list.length ? '' : '교구 이름 (예: 수막대)'}">`;
     const inp = box.querySelector('input');
     const add = () => {
-      inp.value.split(',').map(s => s.trim()).filter(Boolean).forEach(v => { if (!list.includes(v)) list.push(v); });
+      const v = inp.value.trim(); if (v && !list.includes(v)) list.push(v);   // 쉼표(,)는 글자로 그대로 둠
       inp.value = ''; onChange(); draw(); box.querySelector('input').focus();
     };
     inp.addEventListener('keydown', e => {
       if (e.isComposing) return;
-      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); }
+      if (e.key === 'Enter') { e.preventDefault(); add(); }
       if (e.key === 'Backspace' && !inp.value && list.length) { list.pop(); onChange(); draw(); box.querySelector('input').focus(); }
     });
     inp.addEventListener('change', () => { if (S.materials.some(m => m.name === inp.value)) add(); });
@@ -1200,13 +1224,14 @@ function renderCal() {
   let h = '일월화수목금토'.split('').map((d, i) => `<div class="cal-dow ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${d}</div>`).join('');
   for (let i = 0; i < cells; i++) {
     const dt = new Date(y, m - 1, 1 - off + i), iso = isoOf(dt), list = map[iso] || [];
-    const evs = evOf(iso), cap = Math.max(1, 3 - Math.min(2, evs.length));
+    const evs = evOf(iso), gp = gradPrepOn(iso), cap = Math.max(1, 3 - Math.min(2, evs.length + gp.length));
     const cls = ['cal-day', dt.getMonth() !== m - 1 && 'out', dt.getDay() === 0 && 'sunday', iso === td && 'today', iso === calSel && 'sel'].filter(Boolean).join(' ');
     h += `<div class="${cls}" data-d="${iso}"><span class="n">${dt.getDate()}</span>` +
-      evs.slice(0, 2).map(ev => `<span class="nm evn">${ev.icon || '📌'} ${esc(ev.title)}</span>`).join('') +
-      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); const st = x.mks.length ? x.mks[0] : x; return `<span class="nm" style="background:${bg};color:${fg}">${st.h != null ? (x.mks.length ? hm(st.h, st.m) : st.h) + ' ' : ''}${esc(x.k.name)}${x.mks.length ? ' 보강' : ''}</span>`; }).join('') +
+      gp.map(k => `<span class="nm evn gp">🎁 수료증, 선물 준비 <small>${esc(k.name)}</small></span>`).join('') +
+      evs.slice(0, Math.max(0, 2 - gp.length)).map(ev => `<span class="nm evn">${ev.icon || '📌'} ${esc(ev.title)}</span>`).join('') +
+      list.slice(0, cap).map(x => { const [bg, fg] = colorOf(S.children.indexOf(x.k)); const st = x.mks.length ? x.mks[0] : x; return `<span class="nm" style="background:${bg};color:${fg}">${st.h != null ? (x.mks.length ? hm(st.h, st.m) : st.h) + ' ' : ''}${esc(x.k.name)}${x.mks.length ? ' 보강' : ''}${gradIcon(x)}</span>`; }).join('') +
       (list.length > cap ? `<span class="more">+${list.length - cap}명</span>` : '') +
-      (list.length || evs.length ? `<span class="dots">${evs.length ? '<i class="evd"></i>' : ''}${list.map(x => `<i style="background:${colorOf(S.children.indexOf(x.k))[1]}"></i>`).join('')}</span>` : '') + `</div>`;
+      (list.length || evs.length || gp.length ? `<span class="dots">${evs.length || gp.length ? '<i class="evd"></i>' : ''}${list.map(x => `<i style="background:${colorOf(S.children.indexOf(x.k))[1]}"></i>`).join('')}</span>` : '') + `</div>`;
   }
   $('#calGrid').innerHTML = h;
   $('#calLegend').innerHTML = S.children.filter(k => k.lessons.length).map(k => { const [bg, fg] = colorOf(S.children.indexOf(k)); return `<span><i style="background:${fg}"></i>${esc(k.name)}${k.hour != null ? ` · ${k.hour}시` : ''}</span>`; }).join('') ||
@@ -1219,13 +1244,16 @@ function renderDay(map = dayMap()) {
   const slots = [...(list.some(x => x.h == null) ? [null] : []), ...HOURS];
   const free = S.children.filter(k => !list.some(x => x.k === k));
   const addSel = h => free.length ? `<select class="addsel" data-add="${h ?? ''}"><option value="">＋ 수업 추가</option>${free.map(k => `<option value="${k.id}">${esc(k.name || '이름 없음')}</option>`).join('')}</select>` : '';
-  const evs = evOf(calSel);
+  const evs = evOf(calSel), gp = gradPrepOn(calSel);
   $('#dayPanel').innerHTML = `
     <div class="day-head">
       <div><div class="d">${dt.getMonth() + 1}월 ${dt.getDate()}일 (${'일월화수목금토'[dt.getDay()]})</div>
-      <p class="hint">${list.length ? `🧒 ${new Set(list.map(x => x.k)).size}명 수업` : '수업이 없는 날이에요'}${evs.length ? ` · 📌 일정 ${evs.length}개` : ''}</p></div>
+      <p class="hint">${list.length ? `🧒 ${new Set(list.map(x => x.k)).size}명 수업` : '수업이 없는 날이에요'}${evs.length ? ` · 📌 일정 ${evs.length}개` : ''}${gp.length ? ` · 🎁 수료 준비 ${gp.length}명` : ''}</p></div>
     </div>
-    ${evs.length ? `<div class="evlist">${evs.map(ev => `<div class="ev" data-ev="${ev.id}">
+    ${evs.length || gp.length ? `<div class="evlist">${gp.map(k => `<div class="ev gp">
+      <span class="evic">🎁</span>
+      <div class="evtx"><b>수료증, 선물 준비</b><span><span class="gname">${esc(k.name)}</span> · 내일 ${GRAD_SEM}-${GRAD_PREP_NO} 수업 · ${GRAD_SEM}-${GRAD_NO} 수료 선물 주는 날</span></div>
+    </div>`).join('')}${evs.map(ev => `<div class="ev" data-ev="${ev.id}">
       <span class="evic">${ev.icon || '📌'}</span>
       <div class="evtx"><b>${esc(ev.title)}</b>${ev.h != null || kidById(ev.kid) ? `<span>${[ev.h != null ? ev.h + ':00' : '', kidById(ev.kid)?.name || ''].filter(Boolean).join(' · ')}</span>` : ''}</div>
       <button class="lx" data-op="evdel" title="일정 지우기" aria-label="일정 지우기">✕</button>
@@ -1320,7 +1348,7 @@ function lessonRow(x) {
   return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" ${x.mks.length ? `data-of="${x.mks[0].of}"` : ''}>
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(x.mks.length ? mkTag(x.sem, x.no) : `${x.sem}-${x.no}`)}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(x.mks.length ? mkTag(x.sem, x.no) : `${x.sem}-${x.no}`)}${gradBadge(x)}</div>
         <div class="sub">${x.mks.length ? mkSub(x.mks) + ' · ' : ''}${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
@@ -1556,13 +1584,138 @@ async function renderHistory() {
   box.innerHTML = `<div class="hist-sum"><span class="avatar sm" style="background:${bg};color:${fg}">${esc(k.name.slice(-2))}</span><b>${esc(k.name)}</b><span class="hint">${rows.length}개 수업 · 피드백 ${rows.filter(r => r.includes('hst done') || r.includes('hst lib')).length}개</span></div>` +
     (rows.join('') || `<div class="card empty">아직 기록이 없어요</div>`);
 }
+/* ── 추천교구: 아이마다 다음 수업에 쓸 제시교구 3개 ──
+   기준 1) 최근 한 달 안에 안 한 교구  2) 나이(개월 수)·진도에 맞는 교구
+        3) 피드백·메모에서 마무리 못 한 교구가 있으면 이어서 (이 경우는 한 달 안에 했어도 추천) */
+const REC_KEY = 'kidsnote-recs', REC_N = 3, REC_DAYS = 30;
+let recCache = (() => { try { return JSON.parse(localStorage.getItem(REC_KEY) || '{}'); } catch (e) { return {}; } })();
+const recBusy = {};
+function saveRecCache() { try { localStorage.setItem(REC_KEY, JSON.stringify(recCache)); } catch (e) {} }
+function ageMonths(birth) {
+  const p = String(birth || '').match(/(\d{4})\D*(\d{1,2})?/); if (!p) return null;
+  const n = new Date(); return (n.getFullYear() - +p[1]) * 12 + (n.getMonth() + 1 - (+p[2] || 1));
+}
+// 다음 수업: 오늘 수업 피드백을 아직 안 썼으면 오늘, 아니면 그다음 수업
+function recTarget(k) {
+  const td = today(), done = S.week.date === td && S.week.entries[k.id]?.result;
+  return k.lessons.find(l => (done ? l.d > td : l.d >= td)) || null;
+}
+// 지난 수업 기록 (날짜 · 교구 · 메모 · 피드백) — 최신순
+function recHistory(k) {
+  const by = {};
+  (recAll || []).filter(r => r.child_id === k.id).forEach(r => { by[r.week_date] = { d: r.week_date, mats: r.materials || [], memo: r.memo || '', words: r.words || '', text: r.result || '' }; });
+  const live = S.week.entries[k.id];
+  if (live) by[S.week.date] = { d: S.week.date, mats: live.materials || [], memo: live.memo, words: live.words, text: live.result };
+  S.library.filter(l => l.childId === k.id && l.date).forEach(l => { const h = (by[l.date] ||= { d: l.date, mats: [], memo: '', words: '', text: '' }); if (!h.text) h.text = l.text; });
+  // 교구 칸이 비어 있으면 피드백의 "🔶 교구 이름" 줄에서 찾음
+  Object.values(by).forEach(h => {
+    if (h.mats.length || !h.text) return;
+    h.mats = h.text.split('\n').filter(s => s.includes('🔶')).map(s => s.replace(/🔶/g, '').trim()).filter(Boolean);
+  });
+  return Object.values(by).filter(h => h.d <= today() && (h.mats.length || h.memo || h.text)).sort((a, b) => b.d.localeCompare(a.d));
+}
+function recentMats(k, target) {
+  const from = addDays(target, -REC_DAYS), set = new Set();
+  recHistory(k).filter(h => h.d >= from && h.d < target).forEach(h => h.mats.forEach(n => set.add(matByName(n)?.name || n)));
+  return [...set];
+}
+async function recommend(cid) {
+  const k = kidById(cid), nx = recTarget(k);
+  if (!k || !nx || recBusy[cid]) return;
+  recBusy[cid] = true; renderRecs();
+  try {
+    const li = lessonInfo(k, nx.d), recent = recentMats(k, nx.d), hist = recHistory(k).slice(0, 8), mon = ageMonths(k.birth);
+    const matList = S.materials.filter(m => m.name).map(m => `- ${m.name} (${m.area || '영역 없음'})${recent.includes(m.name) ? ' [최근 한 달 안에 함]' : ''}: ${(m.desc || '').slice(0, 70)}`).join('\n');
+    const histText = hist.length ? hist.map(h => `[${kDate(h.d)}] 교구: ${h.mats.join(', ') || '-'}\n메모: ${(h.memo || '-').slice(0, 300)}${h.words ? `\n아이 말: ${h.words.slice(0, 150)}` : ''}${h.text ? `\n피드백: ${h.text.slice(0, 600)}` : ''}`).join('\n\n') : '(아직 기록 없음)';
+    const system = `당신은 경력 많은 몬테소리 선생님입니다. 아이의 다음 수업에 제시할 교구를 정확히 ${REC_N}개 고릅니다.
+[고르는 기준]
+1. 최근 한 달 안에 한 교구([최근 한 달 안에 함] 표시)는 빼고 고릅니다.
+2. 아이의 나이(개월 수)와 지금까지 한 진도에 맞는 교구를 고릅니다. 이미 익힌 교구의 다음 단계, 선행 교구를 마친 교구를 우선합니다.
+3. 단, 지난 메모·피드백에서 끝까지 마치지 못했거나 "다음에 이어서" 하기로 한 교구가 있으면 한 달 안에 했어도 "이어서"로 먼저 넣습니다.
+4. 영역(일상·감각·언어·수·문화)이 한쪽으로 몰리지 않게 합니다.
+5. 반드시 <교구 목록>에 있는 이름을 글자 그대로 씁니다.
+[출력] 아래 JSON만 출력합니다. 다른 글은 쓰지 않습니다.
+{"items":[{"name":"교구 이름","kind":"이어서 또는 새 교구","why":"추천 이유 한 문장 (기준 번호가 드러나게)"}]}`;
+    const text = `<아이 정보>
+이름: ${k.name}
+나이: ${mon != null ? `${mon}개월 (${age(k.birth)})` : '미상'}
+성향·특징: ${k.traits || '-'}
+요즘 관심사·이어갈 점: ${k.note || '-'}
+다음 수업: ${kDate(nx.d)}${li ? ` (${li.sem}학기 ${li.no}번째)` : ''}
+</아이 정보>
+
+<지난 수업 기록 (최신순)>
+${histText}
+</지난 수업 기록>
+
+<교구 목록>
+${matList}
+</교구 목록>`;
+    const out = await callClaude(system, [{ type: 'text', text }], 1500);
+    const js = JSON.parse((out.match(/\{[\s\S]*\}/) || ['{}'])[0]);
+    const items = (js.items || []).map(it => ({ name: matByName(String(it.name || ''))?.name || String(it.name || ''), kind: String(it.kind || ''), why: String(it.why || '') })).filter(it => it.name).slice(0, REC_N);
+    if (!items.length) throw new Error('추천 결과를 읽지 못했어요. 다시 눌러 주세요');
+    recCache[cid] = { for: nx.d, at: new Date().toISOString(), items }; saveRecCache();
+  } catch (e) { toast(`${k.name}: ${e.message}`); }
+  finally { recBusy[cid] = false; renderRecs(); }
+}
+async function renderRecs() {
+  const box = $('#recRecView');
+  if (!recAll) {
+    box.innerHTML = `<div class="loading" style="padding:20px"><div class="spin"></div>기록을 불러오는 중…</div>`;
+    try { await flush(); recAll = (await api('export')).week_entries || []; } catch (e) { box.innerHTML = `<div class="card empty">불러오지 못했어요<br><span class="hint">${esc(e.message)}</span></div>`; return; }
+    if (recMode !== 'rec') return;
+  }
+  const q = $('#recSearch').value.trim();
+  const ks = S.children.filter(k => (!q || k.name.includes(q)) && recTarget(k));
+  const rows = ks.sort((a, b) => recTarget(a).d.localeCompare(recTarget(b).d) || (recTarget(a).h ?? 99) - (recTarget(b).h ?? 99)).map(k => {
+    const nx = recTarget(k), li = lessonInfo(k, nx.d), [bg, fg] = colorOf(S.children.indexOf(k));
+    const recent = recentMats(k, nx.d), rc = recCache[k.id], fresh = rc && rc.for === nx.d;
+    return `<div class="card pad reccard" data-id="${k.id}">
+      <div class="rechead">
+        <span class="avatar sm" style="background:${bg};color:${fg}">${esc(k.name.slice(-2))}</span>
+        <div class="recwho"><b>${esc(k.name)}</b> <span class="hint">${age(k.birth) || '나이 미입력'}</span>
+          <div class="hint">다음 수업 ${kDate(nx.d)} ${hourShort(nx.h)}${li ? ` · <b>${li.sem}-${li.no}</b>` : ''}</div></div>
+        <span class="row" style="gap:6px;flex-wrap:nowrap">
+          ${fresh ? `<button class="btn sm ghost" data-r="copy">복사</button>` : ''}
+          <button class="btn sm" data-r="go" ${recBusy[k.id] ? 'disabled' : ''}>${recBusy[k.id] ? '고르는 중…' : fresh ? '↻ 다시 추천' : '✨ 추천 받기'}</button>
+        </span>
+      </div>
+      ${fresh ? `<ol class="reclist">${rc.items.map(it => { const m = matByName(it.name); return `<li>
+        <div><b>${esc(it.name)}</b>${m?.area ? ` <span class="tag">${esc(m.area)}</span>` : ''}${it.kind ? ` <span class="tag ${it.kind.includes('이어') ? 'sem' : 'time'}">${esc(it.kind)}</span>` : ''}</div>
+        <div class="hint">${esc(it.why)}</div></li>`; }).join('')}</ol>` : rc ? `<p class="hint">지난 추천(${kDate(rc.for)} 수업용)은 지난 일정이에요. 다시 추천 받아 주세요.</p>` : ''}
+      <p class="hint recrecent">최근 한 달 한 교구: ${recent.length ? recent.map(esc).join(', ') : '없음'}</p>
+    </div>`;
+  });
+  box.innerHTML = `<div class="row" style="justify-content:space-between;align-items:center;margin:4px 0 12px;gap:8px">
+      <p class="hint" style="flex:1">한 달 안에 안 한 교구 · 나이와 진도 · 마무리 못 한 교구를 보고 아이마다 ${REC_N}개씩 골라요.</p>
+      ${ks.length ? `<button class="btn primary sm" data-r="all">✨ 모두 추천 받기</button>` : ''}
+    </div>` + (rows.join('') || `<div class="card empty"><span class="big">🧩</span>다음 수업이 잡힌 아이가 없어요</div>`);
+}
+$('#recRecView').addEventListener('click', async e => {
+  const b = e.target.closest('[data-r]'); if (!b) return;
+  if (b.dataset.r === 'all') {
+    const ids = [...$$('#recRecView .reccard')].map(c => c.dataset.id);
+    for (const id of ids) await recommend(id);
+    return;
+  }
+  const k = kidById(b.closest('.reccard').dataset.id); if (!k) return;
+  if (b.dataset.r === 'go') return recommend(k.id);
+  if (b.dataset.r === 'copy') {
+    const rc = recCache[k.id], nx = recTarget(k), li = nx && lessonInfo(k, nx.d);
+    copyText(`${k.name} ${kDate(rc.for)}${li ? ` (${li.sem}-${li.no})` : ''} 추천 교구\n` + rc.items.map((it, i) => `${i + 1}. ${it.name}${it.kind ? ` [${it.kind}]` : ''} - ${it.why}`).join('\n'));
+  }
+});
 function setRecMode(m) {
   recMode = m;
   $$('#recMode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   $('#recDateView').hidden = m !== 'date';
   $('#recNames').hidden = $('#recNameView').hidden = m !== 'name';
+  $('#recRecView').hidden = m !== 'rec';
   drawRecDates();
-  if (m !== 'date') { recAll = null; drawRecNames(); renderHistory(); }
+  if (m !== 'date') recAll = null;
+  if (m === 'name') { drawRecNames(); renderHistory(); }
+  if (m === 'rec') renderRecs();
 }
 $('#recMode').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1573,7 +1726,7 @@ $('#recMode').onclick = e => {
   if (b.dataset.m !== recMode) { setRecMode(b.dataset.m); pushNav(); }
 };
 $('#recSearch').oninput = () => {
-  if (recMode === 'date') { drawRecDates(); applyNameFilter(); } else { drawRecNames(); renderHistory(); }
+  if (recMode === 'date') { drawRecDates(); applyNameFilter(); } else if (recMode === 'rec') renderRecs(); else { drawRecNames(); renderHistory(); }
 };
 function applyNameFilter() {
   const q = $('#recSearch').value.trim();
@@ -1598,7 +1751,7 @@ $('#recNameView').addEventListener('click', e => {
 
 function renderWeek() {
   refreshDatalist();
-  if (recMode === 'date') drawRecDates(); else { drawRecNames(); renderHistory(); }
+  if (recMode === 'date') drawRecDates(); else if (recMode === 'rec') renderRecs(); else { drawRecNames(); renderHistory(); }
   const rank = k => { const i = lessonInfo(k, S.week.date); return i ? (i.h ?? 50) : 100 + S.children.indexOf(k); };
   $('#kids').innerHTML = S.children.length
     ? [...S.children].sort((a, b) => rank(a) - rank(b)).map(k => kidCard(k, S.children.indexOf(k))).join('')
@@ -1879,7 +2032,7 @@ ${k.note ? `요즘 관심사·이어갈 점: ${k.note}\n` : ''}</아이 정보>
 
 <오늘 수업>
 수업 날짜: ${kDate(S.week.date) || '-'}
-${li ? `회차: ${li.sem}학기 ${li.no}번째 수업${li.no === PER_SEM ? ' (이번 학기 마지막 수업)' : ''}\n` : ''}제시교구:
+${li ? `회차: ${li.sem}학기 ${li.no}번째 수업${li.no === PER_SEM ? ' (이번 학기 마지막 수업)' : ''}\n` : ''}${li?.no === REREG_NO ? `※ 이번은 ${REREG_NO}회차라서 피드백 맨 마지막 줄에 "${REREG_LINE}" 를 그대로 넣습니다.\n` : ''}제시교구:
 ${matInfo || '- (없음)'}
 
 활동 메모:
@@ -1914,6 +2067,13 @@ async function callClaude(system, content, maxTokens = 4000) {
   if (data?.stop_reason === 'max_tokens') setTimeout(() => toast('글이 길어서 끝까지 못 썼어요. 다시 생성해 주세요'), 0);
   return out;
 }
+// 9회차 피드백은 맨 마지막에 재등록 안내를 꼭 붙임 (AI가 빠뜨리거나 중간에 넣어도 끝으로 옮김)
+const REREG_NO = 9, REREG_LINE = '*다음 시간은 재 등록 기간입니다.';
+function withRereg(t, li) {
+  if (li?.no !== REREG_NO) return t;
+  const body = t.split('\n').filter(s => !s.includes('재 등록 기간') && !s.includes('재등록 기간')).join('\n').trimEnd();
+  return `${body}\n\n${REREG_LINE}`;
+}
 const cleanOut = t => t.replace(/^```[a-z]*\n?|```$/g, '').replace(/\*\*(.+?)\*\*/g, '$1').trim();
 
 async function generate(cid, silent) {
@@ -1926,7 +2086,7 @@ async function generate(cid, silent) {
   try {
     await Promise.all(en.photos.map(p => loadPhoto(p).catch(() => {})));
     const p = buildPrompt(cid);
-    en.result = cleanOut(await callClaude(p.system, p.content));
+    en.result = withRereg(cleanOut(await callClaude(p.system, p.content)), lessonInfo(kidById(cid), S.week.date));
     mark('week_entries', cid);
   } catch (e) { toast(`${kidById(cid)?.name || ''}: ${e.message}`); }
   finally {
