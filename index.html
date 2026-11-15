@@ -184,7 +184,7 @@
   .kid-body{display:none;padding:2px 18px 18px;border-top:1px dashed var(--line2)}
   .kid.open .kid-body{display:block}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .three{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px}
+  .three{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .three .full{grid-column:1/-1}
   @media (max-width:720px){.two{grid-template-columns:1fr}}
 
@@ -283,6 +283,28 @@
   .evform .full{grid-column:1/-1}
   /* 휴강 · 보강 */
   .lesson.off{opacity:.6}
+  /* 일정 변경 탭 · 보강 표시 · 회차 고치기 */
+  .etabs{display:flex;gap:4px;background:rgba(0,0,0,.05);border-radius:10px;padding:3px}
+  .etabs button{flex:1;border:0;background:transparent;border-radius:8px;padding:7px 6px;font-size:12.5px;font-weight:700;cursor:pointer;color:inherit;white-space:nowrap}
+  .etabs button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .gbadge.mkb{background:#ffe3ee;color:#c04a78}
+  .seqbtn{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:700}
+  .seqbtn:hover{box-shadow:0 0 0 1.5px currentColor inset}
+  /* 보강·결석 기록 */
+  .calview{margin-bottom:12px}
+  .logcard+.logcard{margin-top:10px}
+  .logcard.hl{box-shadow:0 0 0 2px var(--accent) inset}
+  .loghead{display:flex;align-items:center;gap:10px}
+  .loghead .hint{margin-left:auto}
+  .logrow{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 0 0;margin-top:10px;border-top:1px dashed var(--line2);font-size:13.5px}
+  .logkind{font-size:12px;font-weight:800;padding:3px 0;border-radius:8px;text-align:center}
+  .logkind.abs{background:#ffe6da;color:#c4603f}
+  .logkind.mk{background:#ffe3ee;color:#c04a78}
+  .logpart{font-size:12.5px;color:var(--sub);margin-top:3px}
+  .lgst{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:999px;background:#eef;color:#557;margin-right:4px}
+  .lgst.done{background:#dcf5ec;color:#2f8f74}
+  .lgst.today{background:#fff1c7;color:#9a7413}
+  .logdel{font-size:12px;padding:5px 8px}
   /* 추천교구 */
   .reccard+.reccard{margin-top:10px}
   .rechead{display:flex;align-items:center;gap:10px}
@@ -495,7 +517,9 @@
 
   <!-- 수업 일정 -->
   <section class="tab on" id="tab-cal">
-    <div class="calwrap">
+    <div class="seg calview" id="calView"><button data-v="cal" class="on">📅 달력</button><button data-v="log">📋 보강·결석 기록</button></div>
+    <div id="calLog" hidden></div>
+    <div class="calwrap" id="calMain">
       <div class="card pad">
         <div class="cal-head">
           <div class="ttl" id="calTitle"></div>
@@ -993,15 +1017,34 @@ function sortLessons(k) { k.lessons.sort((a, b) => a.d.localeCompare(b.d)); }
 function lessonInfo(k, date) {
   if (!k) return null;
   const i = k.lessons.findIndex(l => l.d === date); if (i < 0) return null;
-  return { d: date, h: k.lessons[i].h, sem: (+k.startSem || 1) + Math.floor(i / PER_SEM), no: i % PER_SEM + 1 };
+  const g = lessonGs(k)[i];
+  return { d: date, h: k.lessons[i].h, sem: Math.floor(g / PER_SEM) + 1, no: g % PER_SEM + 1, i };
+}
+/* 회차 번호: 시작 학기부터 하나씩 늘어나고, 수업에 set(직접 고친 번호)이 있으면 그 수업부터 다시 이어서 셈
+   g = (학기-1)*12 + (회차-1) */
+function lessonGs(k) {
+  let g = ((+k.startSem || 1) - 1) * PER_SEM - 1;
+  return k.lessons.map(l => (g = l.set != null ? +l.set : g + 1));
+}
+const gOf = (sem, no) => (sem - 1) * PER_SEM + (no - 1);
+// 학기-회차를 직접 고침 → 이후 회차도 이어서 바뀌고, 첫 수업이면 프로필의 시작 학기·회차도 같이 바뀜
+function setSeq(k, i, sem, no) {
+  const g = gOf(sem, no);
+  if (i === 0) { k.startSem = sem; if (no === 1) delete k.lessons[0].set; else k.lessons[0].set = g; return; }
+  const prev = lessonGs(k)[i - 1];
+  if (g === prev + 1) delete k.lessons[i].set; else k.lessons[i].set = g;
 }
 /* 휴강 → 보강
    휴강한 수업은 일정에서 빠지고(이후 회차 번호가 당겨짐, 끝에 회차를 더하지 않음),
    보강 시간(합계 40분)은 수업 하나(기준 수업)에 mk:[{d,h,m,dur}] 로 달아 둠.
    화면 표시: 보강하는 날 회차 "6-8" → "6-8/9 보강" */
+// 보강 한 묶음(g) = 한 번의 보강/결석 입력. kind: '보강' | '결석', 결석이면 abs(결석한 날)·absSeq(그날 회차)·absH 를 기억
 function mkParts(k) {
   const out = [];
-  k.lessons.forEach(l => (l.mk || []).forEach((p, j) => out.push({ ...p, m: p.m || 0, of: l.d, part: j + 1, total: l.mk.length })));
+  k.lessons.forEach(l => (l.mk || []).forEach(p => out.push({ ...p, m: p.m || 0, kind: p.kind || '보강', g: p.g || 'old-' + l.d, of: l.d })));
+  const cnt = {}; out.sort((a, b) => (a.d + pad2(a.h) + pad2(a.m)).localeCompare(b.d + pad2(b.h) + pad2(b.m)));
+  out.forEach(p => { p.part = (cnt[p.g] = (cnt[p.g] || 0) + 1); });
+  out.forEach(p => { p.total = cnt[p.g]; });
   return out;
 }
 const mkTag = (sem, no) => `${sem}-${no}/${no + 1} 보강`;
@@ -1125,7 +1168,7 @@ function showTab(tab) {
   $$('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
   $$('section.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + tab));
   if (tab === 'week') recAll = null;
-  ({ cal: renderCal, week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[tab]();
+  ({ cal: () => (calView === 'log' ? renderAbsLog() : renderCal()), week: renderWeek, kids: renderKids, lib: renderLib, mat: renderMats, set: renderSettings })[tab]();
 }
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1292,12 +1335,13 @@ function saveEvent() {
 }
 let editing = '';   // 일정 변경 중인 수업 "아이id|날짜"
 let mkRows = null;  // 보강 입력 중인 줄 [{d, t:'09:40', dur}]
-let mkMode = '';    // 'skip' = 이 수업 휴강 + 보강 / 'here' = 이 수업에 보강 시간 달기
+let mkMode = '';    // 'skip' = 결석(이 수업 빠짐 + 보강) / 'here' = 보강(이 수업에 보강 시간 달기)
 const MK_DURS = [10, 15, 20, 25, 30, 35, 40];
 const mkSum = () => (mkRows || []).reduce((s, r) => s + (+r.dur || 0), 0);
+const ownMk = l => (l?.mk || []).filter(p => (p.kind || '보강') === '보강' && (p.src || l.d) === l.d);   // 이 수업에서 직접 넣은 보강
 function mkFromLesson(k, d, mode) {
-  const l = k.lessons.find(x => x.d === d);
-  if (mode === 'here' && l?.mk?.length) return l.mk.map(p => ({ d: p.d, t: `${pad2(p.h)}:${pad2(p.m || 0)}`, dur: p.dur }));
+  const l = k.lessons.find(x => x.d === d), own = ownMk(l);
+  if (mode === 'here' && own.length) return own.map(p => ({ d: p.d, t: `${pad2(p.h)}:${pad2(p.m || 0)}`, dur: p.dur }));
   return [{ d: mode === 'skip' ? (nextLesson(k, d)?.d || '') : d, t: '', dur: LESSON_MIN }];
 }
 function readMk() {
@@ -1305,11 +1349,16 @@ function readMk() {
   mkRows = $$('#dayPanel .mkrow').map(r => ({ d: r.querySelector('[data-m=d]').value, t: r.querySelector('[data-m=t]').value, dur: +r.querySelector('[data-m=dur]').value }));
 }
 function mkSumHtml() { const s = mkSum(); return `합계 <b class="${s === LESSON_MIN ? 'ok' : 'bad'}">${s}분</b> / ${LESSON_MIN}분`; }
+function editTabs() {
+  const cur = mkRows ? (mkMode === 'skip' ? 'abs' : 'mk') : 'edit';
+  return `<div class="full etabs">${[['edit', '🗓 일정 변경'], ['mk', '➕ 보강'], ['abs', '🙅 결석']].map(([t, n]) => `<button type="button" class="${cur === t ? 'on' : ''}" data-op="etab" data-t="${t}">${n}</button>`).join('')}</div>`;
+}
 function mkForm(x) {
-  const has = !!x.k.lessons.find(y => y.d === x.d)?.mk?.length;
+  const has = ownMk(x.k.lessons.find(y => y.d === x.d)).length > 0;
   return `<div class="ledit mkform">
-    <div class="full mkhead"><b>${mkMode === 'skip' ? `${kDate(x.d)} 휴강 → 보강 시간` : '보강 시간'}</b><span class="mksum">${mkSumHtml()}</span></div>
-    ${mkMode === 'skip' ? `<p class="hint full">이 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요. 보강하는 날은 "6-8/9 보강"처럼 표시돼요.</p>` : ''}
+    ${editTabs()}
+    <div class="full mkhead"><b>${mkMode === 'skip' ? `${kDate(x.d)} 결석 → 보강 일정` : `${kDate(x.d)} 수업 보강 일정`}</b><span class="mksum">${mkSumHtml()}</span></div>
+    <p class="hint full">${mkMode === 'skip' ? '결석한 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요.' : '이 수업에 더해서 하는 보강 시간을 적어요.'} 보강하는 날은 이름 옆에 "보강"이 붙어요.</p>
     ${mkRows.map((r, i) => `<div class="mkrow" data-i="${i}">
       <input type="date" data-m="d" value="${r.d}" aria-label="보강 날짜">
       <input type="time" data-m="t" value="${r.t}" step="300" aria-label="보강 시작 시간">
@@ -1320,9 +1369,9 @@ function mkForm(x) {
     <div class="ledit-btns">
       <button class="lbtn ghost" data-op="mkadd">＋ 보강 날짜 추가</button>
       <span class="spacer"></span>
-      ${mkMode === 'skip' ? `<button class="lbtn ghost" data-op="push" title="보강 없이 이 수업을 빼고 마지막 회차를 한 주 뒤로 미뤄요">보강 없이 미루기</button>` : has ? `<button class="lbtn ghost" data-op="mkclear">보강 지우기</button>` : ''}
+      ${mkMode === 'here' && has ? `<button class="lbtn ghost" data-op="mkclear">보강 지우기</button>` : ''}
       <button class="lbtn ghost" data-op="cancel">취소</button>
-      <button class="lbtn solid" data-op="mksave">${mkMode === 'skip' ? '휴강 · 보강 저장' : '보강 저장'}</button>
+      <button class="lbtn solid" data-op="mksave">${mkMode === 'skip' ? '결석 · 보강 저장' : '보강 저장'}</button>
     </div>
   </div>`;
 }
@@ -1330,39 +1379,36 @@ const mkSub = mks => '보강 ' + mks.map(p => `${tRange(p.h, p.m, p.dur)} (${p.d
 function lessonRow(x) {
   const [bg, fg] = colorOf(S.children.indexOf(x.k));
   const av = `<div class="avatar sm" style="background:#fff;color:${fg}">${esc((x.k.name || '?').slice(-2))}</div>`;
-  const tag = t => `<span class="tag" style="background:#fff;color:${fg}">${t}</span>`;
+  const seq = (t, edit) => edit ? `<button type="button" class="tag seqbtn" style="background:#fff;color:${fg}" data-op="seq" title="눌러서 학기-회차 고치기">${t} ✎</button>` : `<span class="tag" style="background:#fff;color:${fg}">${t}</span>`;
+  const mkb = x.mks.length ? `<span class="gbadge mkb">보강</span>` : '';
   if (x.mkOnly) return `<div class="lesson mk" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" data-of="${x.mks[0].of}">
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(mkTag(x.sem, x.no))}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(`${x.sem}-${x.no}/${x.no + 1}`)}</div>
         <div class="sub">${mkSub(x.mks)}</div>
       </div>
       <div class="lacts">
-        <button class="lbtn" data-op="mkgo">🗓 <span class="lg">보강 </span>변경</button>
-        <button class="lbtn" data-op="fb">✏️ 피드백</button>
+        <button class="lbtn" data-op="mkgo">📋 <span class="lg">보강 </span>기록</button>
       </div>
     </div>
   </div>`;
   const key = `${x.k.id}|${x.d}`, open = editing === key;
-  const own = !!x.k.lessons.find(y => y.d === x.d)?.mk?.length;
-  return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" ${x.mks.length ? `data-of="${x.mks[0].of}"` : ''}>
+  return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} ${tag(x.mks.length ? mkTag(x.sem, x.no) : `${x.sem}-${x.no}`)}${gradBadge(x)}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(x.mks.length ? `${x.sem}-${x.no}/${x.no + 1}` : `${x.sem}-${x.no}`, true)}${gradBadge(x)}</div>
         <div class="sub">${x.mks.length ? mkSub(x.mks) + ' · ' : ''}${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
         <button class="lbtn" data-op="edit">🗓 <span class="lg">일정 </span>변경</button>
-        <button class="lbtn" data-op="fb">✏️ 피드백</button>
       </div>
     </div>
     <button class="lx" data-op="del" title="이 수업 지우기" aria-label="이 수업 지우기">✕</button>
     ${open && mkRows ? mkForm(x) : open ? `<div class="ledit">
+      ${editTabs()}
       <label>날짜<input type="date" data-e="date" value="${x.d}"></label>
       <label>시간<select data-e="hour">${hourOptions(x.h)}</select></label>
       <div class="ledit-btns">
-        <button class="lbtn ghost" data-op="mkopen" title="이 수업을 휴강하고 보강 날짜·시간을 정해요">휴강 처리</button>
-        <button class="lbtn ghost" data-op="mkhere" title="이 수업 날에 하는 보강 시간을 적어요">${own ? '보강 변경' : '＋ 보강'}</button>
         <span class="spacer"></span>
         <button class="lbtn ghost" data-op="cancel">취소</button>
         <button class="lbtn solid" data-op="apply">변경하기</button>
@@ -1370,7 +1416,55 @@ function lessonRow(x) {
     </div>` : ''}
   </div>`;
 }
-function calChanged(k) { sortLessons(k); mark('children', k.id); renderCal(); }
+function calChanged(k) { sortLessons(k); mark('children', k.id); renderCal(); if (calView === 'log') renderAbsLog(); }
+
+/* ── 보강·결석 기록 (수업 일정 탭 안의 작은 탭) ── */
+let calView = 'cal', recLogKid = null;
+function setCalView(v) {
+  calView = v;
+  $$('#calView button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('#calMain').hidden = v !== 'cal'; $('#calLog').hidden = v !== 'log';
+  if (v === 'log') renderAbsLog(); else renderCal();
+}
+$('#calView').onclick = e => { const b = e.target.closest('button[data-v]'); if (b) { recLogKid = null; setCalView(b.dataset.v); } };
+function absGroups(k) {
+  const by = {};
+  mkParts(k).forEach(p => { (by[p.g] ||= { g: p.g, kind: p.kind, abs: p.abs, absSeq: p.absSeq, src: p.src || p.of, parts: [] }).parts.push(p); });
+  return Object.values(by).map(r => ({ ...r, key: r.kind === '결석' ? r.abs : r.src })).sort((a, b) => b.key.localeCompare(a.key));
+}
+function renderAbsLog() {
+  const td = today();
+  const st = d => d < td ? '<span class="lgst done">완료</span>' : d === td ? '<span class="lgst today">오늘</span>' : '<span class="lgst">예정</span>';
+  const cards = S.children.map(k => {
+    const gs = absGroups(k), [bg, fg] = colorOf(S.children.indexOf(k));
+    const nAbs = gs.filter(r => r.kind === '결석').length, nMk = gs.reduce((s, r) => s + r.parts.length, 0), nDone = gs.reduce((s, r) => s + r.parts.filter(p => p.d < td).length, 0);
+    return `<div class="card pad logcard ${recLogKid === k.id ? 'hl' : ''}" data-id="${k.id}">
+      <div class="loghead"><span class="avatar sm" style="background:${bg};color:${fg}">${esc((k.name || '?').slice(-2))}</span>
+        <b>${esc(k.name || '이름 없음')}</b>
+        <span class="hint">${gs.length ? `결석 ${nAbs}회 · 보강 ${nMk}번 (완료 ${nDone})` : '기록 없음'}</span></div>
+      ${gs.map(r => `<div class="logrow" data-g="${esc(r.g)}">
+        <div class="logkind ${r.kind === '결석' ? 'abs' : 'mk'}">${r.kind === '결석' ? '🙅 결석' : '➕ 보강'}</div>
+        <div class="logbody">
+          <div><b>${r.kind === '결석' ? `${kDate(r.abs)}${r.absSeq ? ` (${r.absSeq})` : ''} 결석` : `${kDate(r.src)} 수업 보강`}</b></div>
+          ${r.parts.map(p => `<div class="logpart">${st(p.d)} 보강 ${kDate(p.d)} ${tRange(p.h, p.m, p.dur)} (${p.dur}분${p.total > 1 ? ` · ${p.part}/${p.total}` : ''})</div>`).join('')}
+        </div>
+        <button class="lbtn ghost logdel" data-op="logdel" title="${r.kind === '결석' ? '결석 기록을 지우고 그 수업을 일정에 되돌려요' : '이 보강 기록을 지워요'}">${r.kind === '결석' ? '결석 취소' : '지우기'}</button>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+  $('#calLog').innerHTML = `<p class="hint" style="margin:0 0 10px">결석·보강은 달력에서 수업의 🗓 일정 변경 → ‘보강’ 또는 ‘결석’ 탭으로 적어요.</p>` +
+    (cards || `<div class="card empty"><span class="big">🧒</span>아직 아이가 없어요</div>`);
+  if (recLogKid) setTimeout(() => $(`#calLog .logcard[data-id="${recLogKid}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+$('#calLog').addEventListener('click', e => {
+  const b = e.target.closest('[data-op=logdel]'); if (!b) return;
+  const k = kidById(b.closest('.logcard').dataset.id), g = b.closest('.logrow').dataset.g;
+  const r = absGroups(k).find(x => x.g === g); if (!r) return;
+  if (!confirm(r.kind === '결석' ? `${k.name} ${kDate(r.abs)} 결석을 취소할까요?\n보강 일정이 지워지고 그 수업이 다시 일정에 들어가요 (이후 회차 번호가 하나씩 밀려요).` : `${k.name} ${kDate(r.src)} 수업 보강 기록을 지울까요?`)) return;
+  k.lessons.forEach(l => { if (!l.mk) return; l.mk = l.mk.filter(p => (p.g || 'old-' + l.d) !== g); if (!l.mk.length) delete l.mk; });
+  if (r.kind === '결석' && r.abs && !k.lessons.some(l => l.d === r.abs)) k.lessons.push({ d: r.abs, h: r.parts[0].absH ?? k.hour ?? null });
+  recLogKid = k.id; calChanged(k); toast(r.kind === '결석' ? '결석을 취소했어요' : '보강 기록을 지웠어요');
+});
 $('#calGrid').addEventListener('click', e => {
   const c = e.target.closest('.cal-day'); if (!c) return;
   calSel = c.dataset.d; calMonth = calSel.slice(0, 7); evForm = false; renderCal();
@@ -1417,14 +1511,20 @@ $('#dayPanel').addEventListener('click', async e => {
     return renderDay();
   }
   if (b.dataset.op === 'cancel') { editing = ''; mkRows = null; return renderDay(); }
-  if (b.dataset.op === 'mkgo') {   // 보강만 있는 날 → 보강이 달린 수업으로 가서 고치기
-    const of = row.dataset.of; calSel = of; calMonth = of.slice(0, 7);
-    editing = `${k.id}|${of}`; mkMode = 'here'; mkRows = mkFromLesson(k, of, 'here'); evForm = false; renderCal();
-    setTimeout(() => $('#dayPanel .mkform')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
-    return;
+  if (b.dataset.op === 'etab') {   // 일정 변경 · 보강 · 결석 탭
+    const t = b.dataset.t;
+    if (t === 'edit') mkRows = null; else { mkMode = t === 'abs' ? 'skip' : 'here'; mkRows = mkFromLesson(k, d, mkMode); }
+    return renderDay();
   }
-  if (b.dataset.op === 'mkopen' || b.dataset.op === 'mkhere') {
-    mkMode = b.dataset.op === 'mkopen' ? 'skip' : 'here'; mkRows = mkFromLesson(k, d, mkMode); return renderDay();
+  if (b.dataset.op === 'mkgo') { recLogKid = k.id; return setCalView('log'); }
+  if (b.dataset.op === 'seq') {   // 학기-회차 직접 고치기
+    const i = lessonInfo(k, d); if (!i) return;
+    const v = prompt(`${k.name} ${kDate(d)} 수업의 학기-회차를 적어 주세요 (예: 6-9)\n이후 회차도 이어서 바뀌고, 아이 프로필에도 반영돼요.`, `${i.sem}-${i.no}`);
+    if (v == null) return;
+    const m = v.trim().match(/^(\d{1,2})\s*[-–.]\s*(\d{1,2})$/);
+    if (!m || +m[1] < 1 || +m[2] < 1 || +m[2] > PER_SEM) return toast(`"학기-회차" 형식으로 적어 주세요 (회차는 1~${PER_SEM})`);
+    setSeq(k, i.i, +m[1], +m[2]); calChanged(k); if ($('#tab-kids').classList.contains('on')) renderKids();
+    return toast(`${k.name} ${kDate(d)} 수업을 ${+m[1]}-${+m[2]}로 바꿨어요 · 이후 회차도 이어서 바뀌었어요`);
   }
   if (b.dataset.op === 'mkadd') {
     readMk(); const left = LESSON_MIN - mkSum(), last = mkRows[mkRows.length - 1] || {};
@@ -1438,24 +1538,30 @@ $('#dayPanel').addEventListener('click', async e => {
     if (mkRows.some(r => !r.d || !r.t)) return toast('보강 날짜와 시간을 모두 적어 주세요');
     const sum = mkSum();
     if (sum !== LESSON_MIN) return toast(`보강 합계가 ${sum}분이에요. ${LESSON_MIN}분을 채워 주세요`);
-    const parts = mkRows.map(r => { const [hh, mm] = r.t.split(':').map(Number); return { d: r.d, h: hh, m: mm, dur: +r.dur }; });
+    const g = uuid().slice(0, 8), info = lessonInfo(k, d);
+    const parts = mkRows.map(r => { const [hh, mm] = r.t.split(':').map(Number); return { d: r.d, h: hh, m: mm, dur: +r.dur, g }; });
     if (mkMode === 'skip') {
-      if (!confirm(`${k.name} ${kDate(d)} 수업을 휴강하고 보강으로 채울까요?\n이 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요.`)) return;
-      k.lessons = k.lessons.filter(x => x !== l);
-      if (!k.lessons.length) { k.lessons.push(l); return toast('남은 수업이 없어 휴강 처리를 할 수 없어요'); }
+      if (!confirm(`${k.name} ${kDate(d)} (${info.sem}-${info.no}) 수업을 결석으로 기록하고 보강으로 채울까요?\n이 수업은 일정에서 빠지고 이후 회차 번호가 하나씩 당겨져요.`)) return;
+      const idx = k.lessons.indexOf(l);
+      if (k.lessons.length < 2) return toast('남은 수업이 없어 결석 처리를 할 수 없어요');
+      if (l.set != null && k.lessons[idx + 1] && k.lessons[idx + 1].set == null) k.lessons[idx + 1].set = l.set;   // 고친 회차 번호는 다음 수업이 이어받음
+      k.lessons.splice(idx, 1);
+      parts.forEach(p => Object.assign(p, { kind: '결석', abs: d, absH: l.h ?? null, absSeq: `${info.sem}-${info.no}` }));
       if (l.mk?.length) attachMk(k, l.mk);
       attachMk(k, parts);
-      toast(`${k.name} ${kDate(d)} 휴강 · 보강 ${parts.length}번 저장했어요`);
+      toast(`${k.name} ${kDate(d)} 결석 · 보강 ${parts.length}번 저장했어요`);
     } else {
-      l.mk = sortMk(parts);
+      parts.forEach(p => Object.assign(p, { kind: '보강', src: d }));
+      const keep = (l.mk || []).filter(p => !ownMk(l).includes(p));
+      l.mk = sortMk([...keep, ...parts]);
       toast(`${k.name} 보강 ${parts.length}번 저장했어요`);
     }
     editing = ''; mkRows = null; calChanged(k);
     return;
   }
   if (b.dataset.op === 'mkclear') {
-    if (!confirm(`${k.name} 보강 일정을 지울까요?`)) return;
-    const l = k.lessons.find(x => x.d === d); if (l) delete l.mk;
+    if (!confirm(`${k.name} ${kDate(d)} 수업의 보강 일정을 지울까요?`)) return;
+    const l = k.lessons.find(x => x.d === d); if (l) { const own = ownMk(l); l.mk = (l.mk || []).filter(p => !own.includes(p)); if (!l.mk.length) delete l.mk; }
     editing = ''; mkRows = null; calChanged(k); toast('보강을 지웠어요');
     return;
   }
@@ -1624,9 +1730,9 @@ async function recommend(cid) {
   if (!k || !nx || recBusy[cid]) return;
   recBusy[cid] = true; renderRecs();
   try {
-    const li = lessonInfo(k, nx.d), recent = recentMats(k, nx.d), hist = recHistory(k).slice(0, 8), mon = ageMonths(k.birth);
-    const matList = S.materials.filter(m => m.name).map(m => `- ${m.name} (${m.area || '영역 없음'})${recent.includes(m.name) ? ' [최근 한 달 안에 함]' : ''}: ${(m.desc || '').slice(0, 70)}`).join('\n');
-    const histText = hist.length ? hist.map(h => `[${kDate(h.d)}] 교구: ${h.mats.join(', ') || '-'}\n메모: ${(h.memo || '-').slice(0, 300)}${h.words ? `\n아이 말: ${h.words.slice(0, 150)}` : ''}${h.text ? `\n피드백: ${h.text.slice(0, 600)}` : ''}`).join('\n\n') : '(아직 기록 없음)';
+    const li = lessonInfo(k, nx.d), recent = recentMats(k, nx.d), hist = recHistory(k).slice(0, 6), mon = ageMonths(k.birth);
+    const matList = S.materials.filter(m => m.name).map(m => `- ${m.name} (${m.area || '영역 없음'})${recent.includes(m.name) ? ' [최근 한 달 안에 함]' : ''}: ${(m.desc || '').slice(0, 40)}`).join('\n');
+    const histText = hist.length ? hist.map(h => `[${kDate(h.d)}] 교구: ${h.mats.join(', ') || '-'}\n메모: ${(h.memo || '-').slice(0, 300)}${h.words ? `\n아이 말: ${h.words.slice(0, 150)}` : ''}${h.text ? `\n피드백: ${h.text.slice(0, 450)}` : ''}`).join('\n\n') : '(아직 기록 없음)';
     const system = `당신은 경력 많은 몬테소리 선생님입니다. 아이의 다음 수업에 제시할 교구를 정확히 ${REC_N}개 고릅니다.
 [고르는 기준]
 1. 최근 한 달 안에 한 교구([최근 한 달 안에 함] 표시)는 빼고 고릅니다.
@@ -1651,7 +1757,10 @@ ${histText}
 <교구 목록>
 ${matList}
 </교구 목록>`;
-    const out = await callClaude(system, [{ type: 'text', text }], 1500);
+    // 모델이 먼저 생각(thinking)하느라 글자 한도를 다 쓰면 빈 응답이 올 수 있어 → 한도를 넉넉히(서버 최대 4000), 비면 한 번 더
+    let out;
+    try { out = await callClaude(system, [{ type: 'text', text }], 4000); }
+    catch (e) { if (!/빈 응답/.test(e.message)) throw e; out = await callClaude(system + '\n짧게 생각하고 바로 JSON만 출력합니다.', [{ type: 'text', text }], 4000); }
     const js = JSON.parse((out.match(/\{[\s\S]*\}/) || ['{}'])[0]);
     const items = (js.items || []).map(it => ({ name: matByName(String(it.name || ''))?.name || String(it.name || ''), kind: String(it.kind || ''), why: String(it.why || '') })).filter(it => it.name).slice(0, REC_N);
     if (!items.length) throw new Error('추천 결과를 읽지 못했어요. 다시 눌러 주세요');
@@ -2115,7 +2224,8 @@ function renderKids() {
       <div class="sched stack">
         <div class="three">
           <div><label class="f">시작 학기</label><input type="number" min="1" data-s="startSem" value="${esc(k.startSem)}"></div>
-          <div><label class="f">수업 시작일 (일요일)</label><input type="date" data-s="startDate" value="${esc(k.startDate)}"></div>
+          <div><label class="f">시작 회차</label><input type="number" min="1" max="${PER_SEM}" data-s="startNo" value="${k.lessons.length ? lessonInfo(k, k.lessons[0].d).no : 1}" ${k.lessons.length ? '' : 'disabled'}></div>
+          <div class="full"><label class="f">수업 시작일 (일요일)</label><input type="date" data-s="startDate" value="${esc(k.startDate)}"></div>
           <div class="full"><label class="f">수업 시간</label><select data-s="hour">${hourOptions(k.hour)}</select></div>
         </div>
         <div class="row" style="justify-content:space-between;align-items:center;gap:8px">
@@ -2143,7 +2253,12 @@ function schedSummary(k) {
 $('#kidList').addEventListener('change', e => {
   const c = e.target.closest('[data-id]'); const f = e.target.dataset.s; if (!c || !f) return;
   const k = kidById(c.dataset.id); const v = e.target.value;
-  if (f === 'startSem') k.startSem = Math.max(1, +v || 1);
+  if (f === 'startSem' || f === 'startNo') {
+    const cur = k.lessons.length ? lessonInfo(k, k.lessons[0].d) : { sem: +k.startSem || 1, no: 1 };
+    const sem = f === 'startSem' ? Math.max(1, +v || 1) : cur.sem;
+    const no = f === 'startNo' ? Math.min(PER_SEM, Math.max(1, +v || 1)) : cur.no;
+    if (k.lessons.length) setSeq(k, 0, sem, no); else k.startSem = sem;
+  }
   if (f === 'hour') {
     const old = k.hour; k.hour = v === '' ? null : +v;
     k.lessons.forEach(l => { if (l.d >= today() && (l.h == null || l.h === old)) l.h = k.hour; });
