@@ -1037,7 +1037,7 @@ function setSeq(k, i, sem, no) {
 /* 휴강 → 보강
    휴강한 수업은 일정에서 빠지고(이후 회차 번호가 당겨짐, 끝에 회차를 더하지 않음),
    보강 시간(합계 40분)은 수업 하나(기준 수업)에 mk:[{d,h,m,dur}] 로 달아 둠.
-   화면 표시: 보강하는 날 회차 "6-8" → "6-8/9 보강" */
+   화면 표시: 보강하는 날은 회차 "6-8" 그대로 + 이름 옆 "보강" 표시 */
 // 보강 한 묶음(g) = 한 번의 보강/결석 입력. kind: '보강' | '결석', 결석이면 abs(결석한 날)·absSeq(그날 회차)·absH 를 기억
 function mkParts(k) {
   const out = [];
@@ -1384,7 +1384,7 @@ function lessonRow(x) {
   if (x.mkOnly) return `<div class="lesson mk" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}" data-of="${x.mks[0].of}">
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(`${x.sem}-${x.no}/${x.no + 1}`)}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(`${x.sem}-${x.no}`)}</div>
         <div class="sub">${mkSub(x.mks)}</div>
       </div>
       <div class="lacts">
@@ -1396,7 +1396,7 @@ function lessonRow(x) {
   return `<div class="lesson ${open ? 'editing' : ''}" style="background:${bg};color:${fg}" data-cid="${x.k.id}" data-d="${x.d}">
     <div class="lrow">${av}
       <div class="linfo">
-        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(x.mks.length ? `${x.sem}-${x.no}/${x.no + 1}` : `${x.sem}-${x.no}`, true)}${gradBadge(x)}</div>
+        <div class="ttl">${esc(x.k.name || '이름 없음')} ${mkb} ${seq(`${x.sem}-${x.no}`, true)}${gradBadge(x)}</div>
         <div class="sub">${x.mks.length ? mkSub(x.mks) + ' · ' : ''}${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
