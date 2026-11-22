@@ -1577,6 +1577,7 @@ function lessonRow(x) {
         <div class="sub">${x.mks.length ? mkSub(x.mks) + ' · ' : ''}${x.sem}학기 ${x.no}번째${x.no === PER_SEM ? ' · 학기 마지막 🎉' : ''}</div>
       </div>
       <div class="lacts">
+        ${x.no === PER_SEM && !isGrad(x) && x.k.lessons[x.k.lessons.length - 1]?.d === x.d ? `<button class="lbtn" data-op="nextSem" title="이어서 ${x.sem + 1}학기 ${PER_SEM}회를 추가해요">＋ <span class="lg">다음 </span>학기</button>` : ''}
         <button class="lbtn" data-op="edit">🗓 <span class="lg">일정 </span>변경</button>
       </div>
     </div>
@@ -1694,6 +1695,15 @@ $('#dayPanel').addEventListener('click', async e => {
     return renderDay();
   }
   if (b.dataset.op === 'mkgo') { recLogKid = k.id; return setCalView('log'); }
+  if (b.dataset.op === 'nextSem') {   // 학기 마지막 수업 카드에서 바로 다음 학기 12회 추가
+    const last = k.lessons[k.lessons.length - 1]; if (!last || last.d !== d) return;
+    const sem = lessonInfo(k, d).sem + 1;
+    const add = genLessons(addDays(d, 7), PER_SEM, last.h ?? k.hour);
+    if (!confirm(`${k.name} ${sem}학기 ${PER_SEM}회를 추가할까요?\n${kDate(add[0].d)} ~ ${kDate(add[add.length - 1].d)}`)) return;
+    k.lessons.push(...add); calChanged(k);
+    if ($('#tab-kids').classList.contains('on')) renderKids();
+    return toast(`${k.name} ${sem}학기 일정을 추가했어요`);
+  }
   if (b.dataset.op === 'seq') {   // 학기-회차 직접 고치기
     const i = lessonInfo(k, d); if (!i) return;
     const v = prompt(`${k.name} ${kDate(d)} 수업의 학기-회차를 적어 주세요 (예: 6-9)\n이후 회차도 이어서 바뀌고, 아이 프로필에도 반영돼요.`, `${i.sem}-${i.no}`);
